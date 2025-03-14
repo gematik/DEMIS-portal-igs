@@ -1,0 +1,22 @@
+:host {
+  .mat-column-uploadTimestamp {
+    max-width: 192px;
+  }
+
+  .mat-column-notification {
+    max-width: 96px;
+    justify-content: center;
+  }
+
+  .meldung_success {
+    color: var(--gem-demis-success-color);
+  }
+
+  .meldung_error {
+    color: var(--gem-demis-error-color);
+  }
+
+  .meldung_aborted {
+    color: var(--color-demis-gray);
+  }
+}

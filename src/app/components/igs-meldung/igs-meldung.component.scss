@@ -1,0 +1,15 @@
+mat-card-actions {
+  padding: 16px;
+}
+
+.mdc-button.mat-primary:not([disabled]) {
+  background-color: var(--gem-demis-primary-color);
+}
+
+#igs-stepped-process-container {
+  flex: 1 1 auto;
+}
+
+#igs-stepped-process-content {
+  padding: 16px;
+}

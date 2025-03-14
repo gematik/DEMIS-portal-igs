@@ -1,0 +1,21 @@
+:host {
+  .mat-column-dateOfSequencing {
+    max-width: 128px;
+  }
+
+  .file_unavailable {
+    color: var(--gem-demis-text-color);
+  }
+
+  .file_selected {
+    color: var(--gem-demis-primary-color);
+  }
+
+  .mat-column-fileOneName,
+  .mat-column-fileTwoName {
+    .mat-icon {
+      margin-right: var(--gem-demis-icon-to-text-padding);
+      min-width: 24px;
+    }
+  }
+}

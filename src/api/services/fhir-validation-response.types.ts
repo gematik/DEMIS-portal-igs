@@ -1,0 +1,56 @@
+/*
+ Copyright (c) 2025 gematik GmbH
+ Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
+ the European Commission - subsequent versions of the EUPL (the "Licence");
+ You may not use this work except in compliance with the Licence.
+    You may obtain a copy of the Licence at:
+    https://joinup.ec.europa.eu/software/page/eupl
+        Unless required by applicable law or agreed to in writing, software
+ distributed under the Licence is distributed on an "AS IS" basis,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the Licence for the specific language governing permissions and
+ limitations under the Licence.
+ */
+
+export namespace FhirValidationResponse {
+  export interface OperationOutcome {
+    resourceType: string;
+    meta: Meta;
+    text: Text;
+    issue: Issue[];
+  }
+
+  export interface Meta {
+    profile: string[];
+  }
+
+  export interface Text {
+    status: string;
+    div: string;
+  }
+
+  export interface Issue {
+    extension?: Extension[];
+    severity: string;
+    code: string;
+    details?: Details;
+    diagnostics: string;
+    location?: string[];
+    id?: string;
+  }
+
+  export interface Extension {
+    url: string;
+    valueInteger?: number;
+    valueString?: string;
+  }
+
+  export interface Details {
+    coding: Coding[];
+  }
+
+  export interface Coding {
+    system?: string;
+    code: string;
+  }
+}

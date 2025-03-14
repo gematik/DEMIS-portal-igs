@@ -1,0 +1,108 @@
+@if (igsMeldungService.notificationUploads$ | async; as results) {
+  <!-- REUSABLE ICON TEMPLATES -->
+  <ng-template #meldungError let-rowNumber="rowNumber">
+    @if(hasNotificationErrorData()) {
+      <button id="results-btn-notification-error-{{ rowNumber }}" mat-icon-button class="error"
+              title="Die Meldung konnte nicht übermittelt werden"
+              (click)="onClickUploadError(rowNumber)">
+        <mat-icon class="meldung_error">
+          error
+        </mat-icon>
+      </button>
+    }
+    @else {
+      <mat-icon class="meldung_error" title="Fehler sind aufgetreten.">
+        error
+      </mat-icon>
+    }
+  </ng-template>
+
+  <ng-template #meldungSuccess>
+    <mat-icon class="meldung_success" title="Meldung erfolgreich übermittelt">
+      cloud_done
+    </mat-icon>
+  </ng-template>
+
+  <ng-template #meldungAborted>
+    <mat-icon class="meldung_aborted" title="Upload abgebrochen">
+      file_upload_off
+    </mat-icon>
+  </ng-template>
+  <!-- /REUSABLE ICON TEMPLATES -->
+
+  <gem-demis-section-title titleText="Ergebnis" [level]="1">
+    <p>Folgende Meldungen wurden übermittelt:</p>
+  </gem-demis-section-title>
+
+  <br /><br />
+
+  <mat-table [dataSource]="toDataSource(results)" class="mat-elevation-z2" [id]="'results-table'">
+    <!-- notification Definition -->
+    <ng-container matColumnDef="notification">
+      <mat-header-cell *matHeaderCellDef> Meldung übermittelt</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        @if (row.status === 'SUCCESS') {
+          <ng-container *ngTemplateOutlet="meldungSuccess"></ng-container>
+        }  @else if (row.status === 'ABORTED') {
+          <ng-container *ngTemplateOutlet="meldungAborted"></ng-container>
+        } @else {
+          <ng-container *ngTemplateOutlet="meldungError; context: { rowNumber: row.rowNumber }"></ng-container>
+        }
+      </mat-cell>
+    </ng-container>
+
+    <!-- uploadTimestamp Definition -->
+    <ng-container matColumnDef="uploadTimestamp">
+      <mat-header-cell *matHeaderCellDef> Übertragungszeitpunkt</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ (row.uploadTimestamp | date : 'dd.MM.yyyy HH:mm:ss') ?? '-' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- demisNotificationId Definition -->
+    <ng-container matColumnDef="demisNotificationId">
+      <mat-header-cell *matHeaderCellDef> Meldungs-ID</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.demisNotificationId ?? '-' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- labSequenceId Definition -->
+    <ng-container matColumnDef="labSequenceId">
+      <mat-header-cell *matHeaderCellDef> Labor-ID</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.labSequenceId ?? '-' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- demisSequenceId Definition -->
+    <ng-container matColumnDef="demisSequenceId">
+      <mat-header-cell *matHeaderCellDef> IGS-ID</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        {{ row.demisSequenceId ?? '-' }}
+      </mat-cell>
+    </ng-container>
+
+
+    <!-- Header and Row Declarations -->
+    <mat-header-row
+      *matHeaderRowDef="['notification', 'uploadTimestamp', 'demisNotificationId', 'labSequenceId', 'demisSequenceId']; sticky: true"></mat-header-row>
+    <mat-row
+      *matRowDef="let row; columns: ['notification', 'uploadTimestamp', 'demisNotificationId', 'labSequenceId', 'demisSequenceId']"></mat-row>
+  </mat-table>
+} @else {
+  <gem-demis-section-title titleText="Keine Daten vorhanden" [level]="2">
+    <p>Es sind keine Ergebnisdaten von IGS-Meldungen vorhanden.</p>
+  </gem-demis-section-title>
+}
+
+
+<gem-demis-actions-bar>
+  <button id="btn-reset-flow" type="button" actions-left mat-stroked-button color="secondary" (click)="igsMeldungService.backToWelcome()">
+    Zurück zur Startseite
+  </button>
+
+  <button id="btn-report-download" [attr.demis-igs-filename]="resultReportFilename" type="button" actions-right mat-flat-button color="primary" (click)="downloadReport()">
+    Report herunterladen
+  </button>
+</gem-demis-actions-bar>
