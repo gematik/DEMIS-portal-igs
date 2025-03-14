@@ -1,0 +1,6 @@
+{
+    "mfIgs": {
+        "igsGatewayUrl": "/gateway/igs",
+        "igsServiceUrl": "/surveillance/notification-sequence"
+    }
+}

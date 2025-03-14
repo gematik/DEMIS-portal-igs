@@ -1,0 +1,35 @@
+<gem-demis-max-height-content-container>
+  @if (igsMeldungSrv.activeStep$ | async; as activeStep) {
+  <gem-demis-tiled-content id="igs-stepped-process-container">
+    <ng-container infoTile>
+      <gem-demis-process-stepper
+        titleText="IGS"
+        subtitleText="Sammelübermittlung zur integrierten genomischen Surveillance vornehmen."
+        [steps]="igsMeldungSrv.steps"
+        [activeStep]="activeStep"
+      ></gem-demis-process-stepper>
+    </ng-container>
+
+    <ng-container contentTile>
+      <div id="igs-stepped-process-content">
+        @switch (activeStep.number) {
+          @case (1) {
+            <np-mf-igs-csv-upload></np-mf-igs-csv-upload>
+          }
+          @case (2) {
+            <np-mf-igs-sequence-selection></np-mf-igs-sequence-selection>
+          }
+          @case (3) {
+            <np-mf-igs-upload-status></np-mf-igs-upload-status>
+          }
+          @case (4) {
+            <np-mf-igs-result></np-mf-igs-result>
+          }
+          @default {
+          }
+        }
+      </div>
+    </ng-container>
+  </gem-demis-tiled-content>
+  }
+</gem-demis-max-height-content-container>

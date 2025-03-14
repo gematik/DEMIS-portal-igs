@@ -1,0 +1,223 @@
+<gem-demis-section-title titleText="Status des Uploads">
+  <p>
+    Die ausgewählten Sequenzen werden nun automatisiert hochgeladen und verarbeitet.
+    Aus den bereitgestellten Informationen werden anschließend automatisiert die Meldungen erstellt und übermittelt.
+  </p>
+</gem-demis-section-title>
+
+@if (igsMeldungService.sequenceFileSelectionOverviewData$ | async; as overviewData) {
+  <!-- REUSABLE ICON TEMPLATES -->
+  <ng-template #sequenceWaitingForUpload>
+    <mat-icon class="sequence-waiting-for-upload" title="Sequenzdatei wurde noch nicht hochgeladen">
+      hourglass_empty
+    </mat-icon>
+  </ng-template>
+
+  <ng-template #sequenceSuccessfullyUploaded>
+    <mat-icon class="sequence-successfully-uploaded" title="Sequenzdatei wurde erfolgreich hochgeladen">
+      cloud_done
+    </mat-icon>
+  </ng-template>
+
+  <ng-template #sequenceSuccessfullyValidated>
+    <mat-icon class="sequence-successfully-validated" title="Sequenzdatei wurde erfolgreich validiert">
+      cloud_done
+    </mat-icon>
+  </ng-template>
+
+  <ng-template #notificationWaitingToBeProcessed>
+    <mat-icon class="notification-waiting-to-be-processed" title="Meldung wurde noch nicht übermittelt">
+      hourglass_empty
+    </mat-icon>
+  </ng-template>
+
+  <ng-template #notificationSuccessfullySent>
+    <mat-icon class="notification-successfully-sent" title="Meldung wurde erfolgreich übermittelt">
+      cloud_done
+    </mat-icon>
+  </ng-template>
+
+  <ng-template #notificationError let-rowNumber="rowNumber">
+    @if(hasErrorData()) {
+      <button [id]="'upload-status-btn-notification-error-' + rowNumber" mat-icon-button class="error"
+              title="Die Meldung konnte nicht übermittelt werden"
+              (click)="onClickUploadError(rowNumber)">
+        <mat-icon>error</mat-icon>
+      </button>
+    }
+    @else {
+      <mat-icon class="error" title="Fehler sind aufgetreten.">
+        error
+      </mat-icon>
+    }
+  </ng-template>
+
+  <ng-template #sequenceError let-rowNumber="rowNumber">
+    @if(hasErrorData()) {
+      <button mat-icon-button class="error"
+              title="Die Sequenzdaten konnte nicht übermittelt werden"
+              (click)="onClickUploadError(rowNumber)">
+        <mat-icon>error</mat-icon>
+      </button>
+    }
+    @else {
+      <mat-icon class="error" title="Die Sequenzdaten konnten nicht übermittelt werden.">
+        error
+      </mat-icon>
+    }
+  </ng-template>
+  <!-- /REUSABLE ICON TEMPLATES -->
+
+  <gem-demis-section-title titleText="Status" [level]="2">
+    <p>Folgende Meldungen werden übermittelt</p>
+  </gem-demis-section-title>
+
+  <mat-table [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2" [id]="'upload-status-table'">
+    <!-- NOTIFICATION Definition -->
+    <ng-container matColumnDef="notification">
+      <mat-header-cell *matHeaderCellDef> Meldung übermittelt</mat-header-cell>
+      <mat-cell *matCellDef="let row" >
+        @if (igsMeldungService.getNotificationUploadStatus(row); as notificationUploadInfo) {
+          <span class="inline-icon">
+        @switch (notificationUploadInfo.status) {
+          @case ('SUCCESS') {
+            <ng-container *ngTemplateOutlet="notificationSuccessfullySent"></ng-container>
+          }
+          @case ('ERROR') {
+            <ng-container
+              *ngTemplateOutlet="notificationError; context: { rowNumber: notificationUploadInfo.rowNumber }"></ng-container>
+          }
+          @case ('PENDING') {
+            <mat-progress-spinner mode="indeterminate" diameter="24"
+                                  title="Meldung wird verarbeitet"></mat-progress-spinner>
+          }
+          @default {
+            <ng-container *ngTemplateOutlet="notificationWaitingToBeProcessed"></ng-container>
+          }
+        }
+      </span>
+        }
+      </mat-cell>
+    </ng-container>
+
+    <!-- DATE_OF_SEQUENCING Definition -->
+    <ng-container matColumnDef="dateOfSequencing">
+      <mat-header-cell *matHeaderCellDef> Sequenzier-datum</mat-header-cell>
+      <mat-cell *matCellDef="let row"> {{
+          row.dateOfSequencing | date :
+            'dd.MM.yyyy'
+        }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- DEMIS_NOTIFICATION_ID Definition -->
+    <ng-container matColumnDef="demisNotificationId">
+      <mat-header-cell *matHeaderCellDef> Meldungs-ID</mat-header-cell>
+      <mat-cell *matCellDef="let row"> {{ row.demisNotificationId }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- LAB_SEQUENCE_ID Definition -->
+    <ng-container matColumnDef="labSequenceId">
+      <mat-header-cell *matHeaderCellDef> Labor-ID</mat-header-cell>
+      <mat-cell *matCellDef="let row"> {{ row.labSequenceId }}</mat-cell>
+    </ng-container>
+
+    <!-- FILE_ONE_NAME Definition -->
+    <ng-container matColumnDef="fileOneName">
+      <mat-header-cell *matHeaderCellDef> Sequenzdatei 1</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        @if (igsMeldungService.getSequenceFileUploadInfo(row.fileOneName); as fileUploadInfo) {
+          <span class="inline-icon">
+        @switch (fileUploadInfo.status) {
+          @case ('PENDING') {
+            <mat-progress-spinner [mode]="fileUploadInfo.progress > 0 ? 'determinate' : 'indeterminate'"
+                                  [value]="fileUploadInfo.progress" diameter="24"
+                                  title="{{ fileUploadInfo.progress }}% hochgeladen"></mat-progress-spinner>
+          }
+          @case ('VALIDATING') {
+            <mat-progress-spinner [mode]="fileUploadInfo.progress > 0 ? 'determinate' : 'indeterminate'"
+                                  [value]="fileUploadInfo.progress" diameter="24"
+                                  title="Sequenzdatei wird validiert"></mat-progress-spinner>
+          }
+          @case ('SUCCESS') {
+            <ng-container *ngTemplateOutlet="sequenceSuccessfullyUploaded"></ng-container>
+          }
+          @case ('VALID') {
+            <ng-container *ngTemplateOutlet="sequenceSuccessfullyValidated"></ng-container>
+          }
+          @case ('ERROR') {
+            <ng-container *ngTemplateOutlet="sequenceError; context: { rowNumber: row.rowNumber }"></ng-container>
+          }
+          @default {
+            <ng-container *ngTemplateOutlet="sequenceWaitingForUpload"></ng-container>
+          }
+        }
+      </span>
+        }
+        <span class="table-cell-filename" title="{{ row.fileOneName }}">{{ row.fileOneName }}</span>
+      </mat-cell>
+    </ng-container>
+
+    <!-- FILE_TWO_NAME Definition -->
+    <ng-container matColumnDef="fileTwoName">
+      <mat-header-cell *matHeaderCellDef> Sequenzdatei 2</mat-header-cell>
+      <mat-cell *matCellDef="let row">
+        @if (row.fileTwoName) {
+          @if (igsMeldungService.getSequenceFileUploadInfo(row.fileTwoName); as fileUploadInfo) {
+            <span class="inline-icon">
+        @switch (fileUploadInfo.status) {
+          @case ('PENDING') {
+            <mat-progress-spinner [mode]="fileUploadInfo.progress > 0 ? 'determinate' : 'indeterminate'"
+                                  [value]="fileUploadInfo.progress" diameter="24"
+                                  title="{{ fileUploadInfo.progress }}% hochgeladen"></mat-progress-spinner>
+          }
+          @case ('VALIDATING') {
+            <mat-progress-spinner [mode]="fileUploadInfo.progress > 0 ? 'determinate' : 'indeterminate'"
+                                  [value]="fileUploadInfo.progress" diameter="24" title="Sequenzdatei wird validiert"
+                                  color="secondary"></mat-progress-spinner>
+          }
+          @case ('SUCCESS') {
+            <ng-container *ngTemplateOutlet="sequenceSuccessfullyUploaded"></ng-container>
+          }
+          @case ('VALID') {
+            <ng-container *ngTemplateOutlet="sequenceSuccessfullyValidated"></ng-container>
+          }
+          @case ('ERROR') {
+            <ng-container *ngTemplateOutlet="sequenceError; context: { rowNumber: row.rowNumber }"></ng-container>
+          }
+          @default {
+            <ng-container *ngTemplateOutlet="sequenceWaitingForUpload"></ng-container>
+          }
+        }
+      </span>
+          }
+        }
+        <span class="table-cell-filename" title="{{ row.fileTwoName }}">{{ row.fileTwoName }}</span>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Header and Row Declarations -->
+    <mat-header-row
+      *matHeaderRowDef="['notification', 'dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']; sticky: true"></mat-header-row>
+    <mat-row
+      *matRowDef="let row; columns: ['notification', 'dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']"></mat-row>
+  </mat-table>
+} @else {
+  <gem-demis-section-title titleText="Keine Daten vorhanden" [level]="2">
+    <p>Es sind keine geparsten Metadaten von IGS-Meldungen vorhanden.</p>
+  </gem-demis-section-title>
+}
+
+<gem-demis-actions-bar>
+  <button id="us-btn-cancel" type="button" actions-left mat-stroked-button color="secondary"
+          (click)="igsMeldungService.cancel()">
+    Abbrechen
+  </button>
+
+  <button id="us-btn-show-results" type="button" actions-right mat-flat-button color="primary"
+          [disabled]="!igsMeldungService.canProceed()"
+          (click)="igsMeldungService.proceed()">
+    Ergebnisse anzeigen
+  </button>
+</gem-demis-actions-bar>

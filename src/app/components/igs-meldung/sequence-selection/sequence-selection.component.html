@@ -1,0 +1,108 @@
+<gem-demis-section-title titleText="Sequenzdateien auswählen">
+  <p>
+    Wählen Sie bitte nachfolgend die den Metadaten zugehörigen Sequenzdateien aus.
+    Die Dateien werden über den Dateinamen den korrekten Metadaten zugeordnet und 
+    zusammen übermittelt. Der Prozess kann erst fortgesetzt werden, wenn alle Sequenzen 
+    bereitgestellt wurden. Durch Betätigung der Schaltfläche "Sequenzen und Metadaten 
+    einreichen" beginnt der Upload.
+  </p>
+</gem-demis-section-title>
+
+@if (igsMeldungService.sequenceFileSelectionOverviewData$ | async; as overviewData) {
+<!-- REUSABLE FILE ICON TEMPLATES -->
+<ng-template #fileNotMatchedIcon>
+  <mat-icon class="file_unavailable" fontSet="material-icons-outlined" title="Sequenzdatei wurde noch nicht zugeordnet.">
+    insert_drive_file
+  </mat-icon>
+</ng-template>
+
+<ng-template #fileMatchedIcon>
+  <mat-icon class="file_selected" title="Sequenzdatei wurde erfolgreich zugeordnet.">
+    insert_drive_file
+  </mat-icon>
+</ng-template>
+<!-- /REUSABLE FILE ICON TEMPLATES -->
+
+<gem-demis-section-title titleText="Sequenzdateien hochladen" [level]="2">
+  <p>Bitte stellen Sie die zugehörigen Sequenzen bereit.</p>
+</gem-demis-section-title>
+
+<gem-demis-file-select displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
+  (onFileSelected)="onFilesSelected($event)" [multipleFilesSelectable]="true"></gem-demis-file-select>
+
+
+<gem-demis-section-title titleText="Übersicht der erforderlichen Sequenzen" [level]="2">
+  <p>Hier sehen Sie welche Sequenzen bereits korrekt zugeordnet wurden.</p>
+</gem-demis-section-title>
+
+
+<mat-table [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2">
+  <!-- DATE_OF_SEQUENCING Definition -->
+  <ng-container matColumnDef="dateOfSequencing">
+    <mat-header-cell *matHeaderCellDef> Sequenzier-datum </mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.dateOfSequencing | date : 'dd.MM.yyyy' }} </mat-cell>
+  </ng-container>
+  
+  <!-- DEMIS_NOTIFICATION_ID Definition -->
+  <ng-container matColumnDef="demisNotificationId">
+    <mat-header-cell *matHeaderCellDef> Meldungs-ID </mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.demisNotificationId }} </mat-cell>
+  </ng-container>
+  
+  <!-- LAB_SEQUENCE_ID Definition -->
+  <ng-container matColumnDef="labSequenceId">
+    <mat-header-cell *matHeaderCellDef> Labor-ID </mat-header-cell>
+    <mat-cell *matCellDef="let row"> {{ row.labSequenceId }} </mat-cell>
+  </ng-container>
+  
+  <!-- FILE_ONE_NAME Definition -->
+  <ng-container matColumnDef="fileOneName">
+    <mat-header-cell *matHeaderCellDef> Sequenzdatei 1 </mat-header-cell>
+    <mat-cell *matCellDef="let row">
+      @if (igsMeldungService.isAttached(row.fileOneName)) {
+        <ng-container *ngTemplateOutlet="fileMatchedIcon"></ng-container>
+      }
+      @else {
+        <ng-container *ngTemplateOutlet="fileNotMatchedIcon"></ng-container>
+      }
+      <span class="table-cell-filename" title="{{ row.fileOneName }}">{{ row.fileOneName }}</span>
+    </mat-cell>
+  </ng-container>
+
+  <!-- FILE_TWO_NAME Definition -->
+  <ng-container matColumnDef="fileTwoName">
+    <mat-header-cell *matHeaderCellDef> Sequenzdatei 2 </mat-header-cell>
+    <mat-cell *matCellDef="let row">
+      @if (row.fileTwoName) {
+        @if (igsMeldungService.isAttached(row.fileTwoName)) {
+          <ng-container *ngTemplateOutlet="fileMatchedIcon"></ng-container>
+        }
+        @else {
+          <ng-container *ngTemplateOutlet="fileNotMatchedIcon"></ng-container>
+        }
+        <span class="table-cell-filename" title="{{ row.fileTwoName }}">{{ row.fileTwoName }}</span>
+      }
+    </mat-cell>
+  </ng-container>
+
+  <!-- Header and Row Declarations -->
+  <mat-header-row *matHeaderRowDef="['dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']; sticky: true"></mat-header-row>
+  <mat-row *matRowDef="let row; columns: ['dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']"></mat-row>
+</mat-table>
+}
+@else {
+<gem-demis-section-title titleText="Keine Daten vorhanden" [level]="2">
+  <p>Es sind keine geparsten Metadaten von IGS-Meldungen vorhanden.</p>
+</gem-demis-section-title>
+}
+
+<gem-demis-actions-bar>
+  <button id="cancel-process-btn" type="button" actions-left mat-stroked-button color="secondary" (click)="igsMeldungService.backToWelcome()">
+    Zurück zur Startseite
+  </button>
+  
+  <button id="start-sequence-upload-btn" type="button" actions-right mat-flat-button color="primary" [disabled]="!igsMeldungService.canProceed()"
+    (click)="igsMeldungService.proceed()">
+    Sequenzen und Metadaten einreichen
+  </button>
+</gem-demis-actions-bar>

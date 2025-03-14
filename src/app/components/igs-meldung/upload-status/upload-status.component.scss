@@ -1,0 +1,34 @@
+:host {
+  .mat-column-dateOfSequencing {
+    max-width: 128px;
+  }
+
+  .mat-column-notification {
+    max-width: 96px;
+    justify-content: center;
+  }
+
+  .file_unavailable {
+    color: var(--gem-demis-text-color);
+  }
+
+  .file_selected {
+    color: var(--gem-demis-primary-color);
+  }
+
+  .sequence-successfully-uploaded,
+  .sequence-successfully-validated,
+  .notification-successfully-sent {
+    color: var(--gem-demis-success-color);
+  }
+
+  .error {
+    color: var(--gem-demis-error-color);
+  }
+
+  .inline-icon {
+    width: 56px;
+    display: inline-flex;
+    justify-content: center;
+  }
+}
