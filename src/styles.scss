@@ -7,11 +7,24 @@ TODO: This needs to be done by defining a DEMIS matieral theme, most likely in P
 */
 .mat-mdc-table {
   background-color: var(--color-demis-white) !important;
+  .mat-mdc-header-row {
+    font-size: 13px;
+    line-height: 18px;
+    font-weight: 700;
+  }
 }
-
+.mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled) {
+  border: 1px solid var(--gem-demis-border-color);
+  background-color: unset !important;
+}
 .mat-primary.mat-mdc-unelevated-button:not(:disabled) {
   background-color: var(--gem-demis-primary-color) !important;
   color: var(--color-demis-white) !important;
+}
+
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button {
+  border-radius: 20rem !important;
 }
 
 .table-cell-filename {

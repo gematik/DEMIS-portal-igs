@@ -1,0 +1,121 @@
+# Default values for portal-igs.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+required:
+  #Define the docker image
+  image:
+    repository: europe-west3-docker.pkg.dev/gematik-all-infra-prod/demis-dev
+    name: portal-igs
+    tag: null
+
+# Extra Labels to be added
+# E.g.
+# customLabels:
+#   my-label: my-label-value
+customLabels: {}
+
+# Extra labels for deployments
+deploymentLabels: {}
+
+# Extra Environment Variables to be defined
+# customEnvVars
+#   key: value
+customEnvVars: {}
+  #PORTAL_CSP_HOSTNAME: DEFINED_IN_EACH_STAGE_ENVIRONMENT
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# The Pull Policy for the Image
+imagePullPolicy: IfNotPresent
+# Define Image Pull Secrets if using private registry
+imagePullSecrets: []
+nameOverride: "portal-igs"
+fullnameOverride: "portal-igs"
+
+podLabels: {}
+
+# Annotations for Workload
+annotations: {}
+
+# Annotations for Pods
+podAnnotations: {}
+
+# Pod Security Context - applies to all containers in a Pod
+podSecurityContext:
+  # The GID to tell the Kubelet to modify permissions of a volume owned by a pod
+  fsGroup: 101
+  # Determines when to apply fsGroup actions - "Always" is the default
+  fsGroupChangePolicy: "OnRootMismatch"
+  # Which GID container process is assigned
+  runAsGroup: 101
+  # Determine whether container process starts as root (UID 0)
+  runAsNonRoot: true
+  # Which UID container process is assigned (nginx uid=999)
+  runAsUser: 101
+
+# Container Security Context for a single container - Takes precedence over PodSecurityContext
+securityContext:
+  #defines whether container can be granted privileges beyond the parent process spawing the process
+  allowPrivilegeEscalation: false
+  #Define whether the container has privileged access e.g. CAP_SYS_ADMIN capability and SELinux spc_t type
+  privileged: false
+  #Usually no longer required. Determines whether /proc is masked to the container. Do not mount /proc from a host to a container
+  procMount: "Default"
+  # The SELinux context to be applied to the container. Must not be explicitly set to Unconfined.
+  seccompProfile:
+    type: "RuntimeDefault"
+  #Which GID container process is assigned.
+  runAsGroup: 101
+  # Determine whether container process starts as root (UID 0)
+  runAsNonRoot: true
+  #Which UID container process is assigned
+  runAsUser: 101
+  # Sets the file system as read-only - TODO: set to true
+  readOnlyRootFilesystem: true
+  #Ability to remove and /or add Linux Capabilities
+  capabilities:
+    drop:
+      - all
+
+service:
+  type: ClusterIP
+  ports:
+    http: 8080
+
+# Default Resources
+resources:
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
+  requests:
+    cpu: "100m"
+    memory: "64Mi"
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+istio:
+  enable: false
+
+config:
+  mfIgs: 
+    igsGatewayUrl: /gateway/igs
+    igsServiceUrl: /surveillance/notification-sequence
