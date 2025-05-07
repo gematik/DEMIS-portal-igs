@@ -1,0 +1,17 @@
+{{- if not .Values.istio.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "portal-igs.fullname" . }}
+  labels:
+    {{- include "portal-igs.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.ports.http }}
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "portal-igs.selectorLabels" . | nindent 4 }}
+{{- end }}

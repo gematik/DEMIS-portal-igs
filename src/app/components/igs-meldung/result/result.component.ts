@@ -1,26 +1,27 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-import { Component, inject, signal } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, inject } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
+import { ExportToFileService } from 'src/api/services/export-to-file.service';
 import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
-import { ExportToFileService } from 'src/api/services/export-to-file.service';
 
 @Component({
   selector: 'np-mf-igs-result',
@@ -51,7 +52,7 @@ export class ResultComponent {
 
   onClickUploadError(rowNumber: number): void {
     const error = this.getRowErrors().find(uploadError => uploadError.rowNumber === rowNumber);
-    this.messageDialogService.errorWithSearch({
+    this.messageDialogService.showErrorDialog({
       clipboardContent: error?.clipboardContent,
       errors: error?.errors || [],
     });
@@ -66,29 +67,29 @@ export class ResultComponent {
 
     if (!item) {
       this.logger.error('No data to download');
-      this.messageDialogService.errorWithSearch({
+      this.messageDialogService.showErrorDialog({
         errors: [{ text: 'Es sind keine Reportdaten zum Download vorhanden.' }],
       });
       return;
     }
 
-    const notificationUploadInfo: IgsMeldung.ExportableNotificationUploadInfo[] = JSON.parse(item).map(
-      (item: IgsMeldung.NotificationUploadInfo, index: number) => {
-        const aggregatedErrorMessages = this.getRowErrors()
-          [index]?.errors.map(e => e.text)
-          .join(' -- ');
-
-        return {
-          rowNumber: item.rowNumber,
-          demisNotificationId: item.demisNotificationId,
-          labSequenceId: item.labSequenceId,
-          status: item.status.toString(),
-          uploadTimestamp: this.determineUploadTimestamp(item),
-          demisSequenceId: item.demisSequenceId ?? 'n/a',
-          errors: aggregatedErrorMessages ? aggregatedErrorMessages : '',
-        } as IgsMeldung.ExportableNotificationUploadInfo;
+    const notificationUploadInfo: IgsMeldung.ExportableNotificationUploadInfo[] = JSON.parse(item).map((item: IgsMeldung.NotificationUploadInfo) => {
+      const rowError = this.getRowErrors().find(uploadError => uploadError.rowNumber === item.rowNumber);
+      let aggregatedErrorMessages = undefined;
+      if (rowError) {
+        aggregatedErrorMessages = rowError.errors.map(e => e.text).join(' -- ');
       }
-    );
+
+      return {
+        rowNumber: item.rowNumber,
+        demisNotificationId: item.demisNotificationId,
+        labSequenceId: item.labSequenceId,
+        status: item.status.toString(),
+        uploadTimestamp: this.determineUploadTimestamp(item),
+        demisSequenceId: item.demisSequenceId ?? 'n/a',
+        errors: aggregatedErrorMessages ? aggregatedErrorMessages : '',
+      } as IgsMeldung.ExportableNotificationUploadInfo;
+    });
 
     this.exportToFileService.exportToCsvFile(this.resultReportFilename, notificationUploadInfo);
   }

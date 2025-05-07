@@ -1,30 +1,33 @@
 /*
- Copyright (c) 2025 gematik GmbH
- Licensed under the EUPL, Version 1.2 or - as soon they will be approved by
- the European Commission - subsequent versions of the EUPL (the "Licence");
- You may not use this work except in compliance with the Licence.
-    You may obtain a copy of the Licence at:
-    https://joinup.ec.europa.eu/software/page/eupl
-        Unless required by applicable law or agreed to in writing, software
- distributed under the Licence is distributed on an "AS IS" basis,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the Licence for the specific language governing permissions and
- limitations under the Licence.
+    Copyright (c) 2025 gematik GmbH
+    Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
+    European Commission – subsequent versions of the EUPL (the "Licence").
+    You may not use this work except in compliance with the Licence.
+    You find a copy of the Licence in the "Licence" file or at
+    https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the Licence is distributed on an "AS IS" basis,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
+    In case of changes by gematik find details in the "Readme" file.
+    See the Licence for the specific language governing permissions and limitations under the Licence.
+    *******
+    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { BehaviorSubject } from 'rxjs';
+import { ExportToFileService } from 'src/api/services/export-to-file.service';
 import { AppModule } from 'src/app/app.module';
 import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from 'src/app/components/igs-meldung/igs-meldung.service';
-import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
+import { IgsMeldung } from '../igs-meldung.types';
 import { ResultComponent } from './result.component';
-import { ExportToFileService } from 'src/api/services/export-to-file.service';
+
+declare type IndexAccessible = Record<string, unknown>;
 
 describe('ResultComponent', () => {
   let component: ResultComponent;
@@ -33,12 +36,12 @@ describe('ResultComponent', () => {
 
   const mockErrors = [
     {
-      rowNumber: 1,
+      rowNumber: 2,
       errors: [{ text: 'error1' }, { text: 'error2' }],
-      clipboardContent: 'Something',
+      clipboardContent: undefined,
     } as UploadError,
     {
-      rowNumber: 2,
+      rowNumber: 3,
       errors: [{ text: 'error3' }, { text: 'error4' }],
       clipboardContent: undefined,
     } as UploadError,
@@ -95,9 +98,12 @@ describe('ResultComponent', () => {
 
   it('should open the upload error dialog with correct data', () => {
     const dialogService = TestBed.inject(MessageDialogService);
-    const spy = spyOn(dialogService, 'errorWithSearch');
+    const spy = spyOn(dialogService, 'showErrorDialog');
     component.onClickUploadError(2);
-    const { rowNumber, ...expectedError } = mockErrors[1];
+    /* we create a clone of the expected error in order not to influence other test cases when we delete property
+       rowNumber */
+    const expectedError = structuredClone(mockErrors[0]);
+    delete (expectedError as unknown as IndexAccessible)['rowNumber'];
     expect(spy).toHaveBeenCalledWith(expectedError);
   });
 
@@ -106,12 +112,12 @@ describe('ResultComponent', () => {
     const logger = TestBed.inject(NGXLogger);
     spyOn(logger, 'error');
     const messageDialog = TestBed.inject(MessageDialogService);
-    spyOn(messageDialog, 'errorWithSearch');
+    spyOn(messageDialog, 'showErrorDialog');
 
     component.downloadReport();
 
     expect(logger.error).toHaveBeenCalled();
-    expect(messageDialog.errorWithSearch).toHaveBeenCalled();
+    expect(messageDialog.showErrorDialog).toHaveBeenCalled();
   });
 
   it('should have a download button with correct filename attibute', () => {
@@ -139,7 +145,7 @@ describe('ResultComponent', () => {
         status: 'SUCCESS',
         uploadTimestamp: '2025-01-31T09:19:08.815Z',
         demisSequenceId: 'IGS-10234-SPNP-42C852B5-A378-4989-90D8-D6654C083B2F',
-        errors: 'error1 -- error2',
+        errors: '',
       },
       {
         rowNumber: 2,
@@ -148,7 +154,7 @@ describe('ResultComponent', () => {
         status: 'ERROR',
         uploadTimestamp: 'n/a',
         demisSequenceId: 'n/a',
-        errors: 'error3 -- error4',
+        errors: 'error1 -- error2',
       },
       {
         rowNumber: 3,
@@ -157,7 +163,7 @@ describe('ResultComponent', () => {
         status: 'ERROR',
         uploadTimestamp: 'n/a',
         demisSequenceId: 'n/a',
-        errors: '',
+        errors: 'error3 -- error4',
       },
     ];
     const expectedReportFilename = 'igs-meldung-report__' + downloadTimestamp.toISOString().replace(/:/g, '-');

@@ -1,0 +1,121 @@
+{{/* Check required values and define variables */}}
+{{- $dockerRepository := .Values.required.image.repository | required ".Values.required.image.repository is required." -}}
+{{- $dockerImage := .Values.required.image.name | required ".Values.required.image.name is required." -}}
+{{- $dockerTag := .Values.required.image.tag | default .Chart.AppVersion -}}
+{{- $customEnvVars := .Values.customEnvVars -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "portal-igs.fullversionname" . }}
+  labels:
+    {{- include "portal-igs.labels" . | nindent 4 }}
+  {{- with .Values.annotations }}
+  annotations:
+    {{- toYaml . | nindent 8 }}
+  {{- end }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "portal-igs.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "portal-igs.selectorLabels" . | nindent 8 }}
+        {{- include "portal-igs.deploymentLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "portal-igs.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: {{ include "portal-igs.fullversionname" . }}
+      containers:
+        - name: {{ .Values.fullnameOverride }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ $dockerRepository }}/{{ $dockerImage }}:{{ $dockerTag }}"
+          {{- /* Pull always an image if is tagged as "latest" */}}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          # Set the Environment Variables for the container
+          env:
+            - name: "TZ"
+              value: "Europe/Berlin"
+            {{- if $customEnvVars }}
+            # Custom Environment Variables
+            {{- range $_, $key := keys $customEnvVars | sortAlpha }}
+            - name: {{ $key | quote }}
+              value: {{ get $customEnvVars $key | quote }}
+            {{- end }}
+            {{- end }}
+          # Ports to be exposed from the container
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          # Performs checks to verify that the application is successfully started
+          # The Application is marked as failed after periodSeconds*failureThreshold seconds
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 10
+            periodSeconds: 30
+          # Use SpringBoot Actuator Liveness Check
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 3
+            periodSeconds: 30
+          # Use SpringBoot Actuator Readiness Check
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            failureThreshold: 5
+            periodSeconds: 10
+          # Define Limits and Requested Resources (CPU/RAM)
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: "/tmp"
+            - name: config-volume
+              mountPath: /usr/share/nginx/config
+              readonly: true
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ include "portal-igs.name" . }}
+              - key: version
+                operator: In
+                values:
+                - {{ .Chart.AppVersion | quote }}
+            topologyKey: "kubernetes.io/hostname"
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
