@@ -2,8 +2,15 @@
 
 # Release portal-igs
 
+## Release 1.2.2
+
+- Updated Portal-Core Library version
+- Updated Nginx Version
+
 ## Release 1.2.1
+
 - Updated ospo-resources for adding additional notes and disclaimer
 
 ## Release 1.2.0
+
 - First official GitHub-Release

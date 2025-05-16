@@ -1,5 +1,5 @@
-ARG SOURCE_DIGEST=d7a882db5450b0f95c8ccf6797d9c4a0c14b9d34f4d4fd66289e6125b95e7989
-FROM nginx:1.27.4-alpine-slim@sha256:${SOURCE_DIGEST}
+ARG SOURCE_DIGEST=39a9a15e0a81914a96fa9ffa980cdfe08e2e5e73ae3424f341ad1f470147c413
+FROM nginx:1.28.0-alpine-slim@sha256:${SOURCE_DIGEST}
 ARG SOURCE_DIGEST
 
 # The STOPSIGNAL instruction sets the system call signal that will be sent to the container to exit
