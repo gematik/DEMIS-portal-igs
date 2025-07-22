@@ -24,6 +24,7 @@ import { IgsMeldung } from '../igs-meldung.types';
   selector: 'np-mf-igs-sequence-selection',
   templateUrl: './sequence-selection.component.html',
   styleUrl: './sequence-selection.component.scss',
+  standalone: false,
 })
 export class SequenceSelectionComponent {
   igsMeldungService = inject(IgsMeldungService);

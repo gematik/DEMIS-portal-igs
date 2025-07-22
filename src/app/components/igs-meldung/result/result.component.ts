@@ -27,6 +27,7 @@ import { IgsMeldung } from '../igs-meldung.types';
   selector: 'np-mf-igs-result',
   templateUrl: './result.component.html',
   styleUrl: './result.component.scss',
+  standalone: false,
 })
 export class ResultComponent {
   readonly igsMeldungService = inject(IgsMeldungService);

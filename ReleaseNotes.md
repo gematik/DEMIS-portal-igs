@@ -2,6 +2,15 @@
 
 # Release portal-igs
 
+## Release 1.2.4
+
+- Update to Angular 19 and Material 19 version
+- Update Portal-Core Library version
+
+## Release 1.2.3
+
+- Adjusted dynamic height behavior of IGS-Portal by using a dedicated component from Portal-Core
+
 ## Release 1.2.2
 
 - Updated Portal-Core Library version

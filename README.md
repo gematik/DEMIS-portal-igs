@@ -149,9 +149,13 @@ If you want to see the security policy, please check our [SECURITY.md](.github/S
 If you want to contribute, please check our [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## License
+Copyright 2024-2025 gematik GmbH
+
 EUROPEAN UNION PUBLIC LICENCE v. 1.2
 
 EUPL © the European Union 2007, 2016
+
+See the [LICENSE](./LICENSE) for the specific language governing permissions and limitations under the License
 
 ## Additional Notes and Disclaimer from gematik GmbH
 
