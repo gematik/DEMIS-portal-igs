@@ -1,4 +1,4 @@
-<gem-demis-max-height-content-container>
+<gem-demis-max-height-content-container [elementSelectorsToSubtract]="['app-navbar']">
   @if (igsMeldungSrv.activeStep$ | async; as activeStep) {
   <gem-demis-tiled-content id="igs-stepped-process-container">
     <ng-container infoTile>

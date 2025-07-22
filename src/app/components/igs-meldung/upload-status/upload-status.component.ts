@@ -26,6 +26,7 @@ import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
   selector: 'np-mf-igs-upload-status',
   templateUrl: './upload-status.component.html',
   styleUrl: './upload-status.component.scss',
+  standalone: false,
 })
 export class UploadStatusComponent implements OnInit {
   igsMeldungService = inject(IgsMeldungService);

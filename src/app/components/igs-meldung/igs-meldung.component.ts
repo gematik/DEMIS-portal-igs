@@ -21,6 +21,7 @@ import { IgsMeldungService } from './igs-meldung.service';
   selector: 'np-mf-igs-igs-meldung',
   templateUrl: './igs-meldung.component.html',
   styleUrl: './igs-meldung.component.scss',
+  standalone: false,
 })
 export class IgsMeldungComponent {
   readonly igsMeldungSrv = inject(IgsMeldungService);

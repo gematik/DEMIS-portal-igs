@@ -25,6 +25,7 @@ import { IgsMeldung } from '../igs-meldung.types';
   selector: 'np-mf-igs-csv-upload',
   templateUrl: './csv-upload.component.html',
   styleUrl: './csv-upload.component.scss',
+  standalone: false,
 })
 export class CsvUploadStepComponent implements OnDestroy {
   readonly uploading$ = new BehaviorSubject<boolean>(false);
