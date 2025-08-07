@@ -2,6 +2,9 @@
 
 # Release portal-igs
 
+## Release 1.3.0
+- add new api endpoint for igs-service url activated by feature flag FEATURE_FLAG_NEW_API_ENDPOINTS
+
 ## Release 1.2.4
 
 - Update to Angular 19 and Material 19 version
