@@ -3,6 +3,6 @@ kubeVersion: ">= 1.26.0"
 name: portal-igs
 description: Helm Chart for the portal-igs frontend application
 type: application
-version: 1.0.0
-appVersion: "1.0.0"
+version: 1.2.4
+appVersion: "1.2.4"
 icon: https://avatars.githubusercontent.com/u/55493511?s=200&v=4
