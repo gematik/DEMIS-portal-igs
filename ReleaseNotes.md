@@ -2,7 +2,13 @@
 
 # Release portal-igs
 
+## Release 1.3.1
+
+- dependencies updated
+- Added test:coverage npm script to run a single test run with coverage report
+
 ## Release 1.3.0
+
 - add new api endpoint for igs-service url activated by feature flag FEATURE_FLAG_NEW_API_ENDPOINTS
 
 ## Release 1.2.4
