@@ -22,10 +22,11 @@ spec:
       {{- include "portal-igs.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
       labels:
         {{- include "portal-igs.selectorLabels" . | nindent 8 }}
         {{- include "portal-igs.deploymentLabels" . | nindent 8 }}

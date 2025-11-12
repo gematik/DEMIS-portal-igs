@@ -1,9 +1,9 @@
 <gem-demis-section-title titleText="Sequenzdateien auswählen">
   <p>
     Wählen Sie bitte nachfolgend die den Metadaten zugehörigen Sequenzdateien aus.
-    Die Dateien werden über den Dateinamen den korrekten Metadaten zugeordnet und 
-    zusammen übermittelt. Der Prozess kann erst fortgesetzt werden, wenn alle Sequenzen 
-    bereitgestellt wurden. Durch Betätigung der Schaltfläche "Sequenzen und Metadaten 
+    Die Dateien werden über den Dateinamen den korrekten Metadaten zugeordnet und
+    zusammen übermittelt. Der Prozess kann erst fortgesetzt werden, wenn alle Sequenzen
+    bereitgestellt wurden. Durch Betätigung der Schaltfläche "Sequenzen und Metadaten
     einreichen" beginnt der Upload.
   </p>
 </gem-demis-section-title>
@@ -42,19 +42,19 @@
     <mat-header-cell *matHeaderCellDef> Sequenzier-datum </mat-header-cell>
     <mat-cell *matCellDef="let row"> {{ row.dateOfSequencing | date : 'dd.MM.yyyy' }} </mat-cell>
   </ng-container>
-  
+
   <!-- DEMIS_NOTIFICATION_ID Definition -->
   <ng-container matColumnDef="demisNotificationId">
     <mat-header-cell *matHeaderCellDef> Meldungs-ID </mat-header-cell>
     <mat-cell *matCellDef="let row"> {{ row.demisNotificationId }} </mat-cell>
   </ng-container>
-  
+
   <!-- LAB_SEQUENCE_ID Definition -->
   <ng-container matColumnDef="labSequenceId">
     <mat-header-cell *matHeaderCellDef> Labor-ID </mat-header-cell>
     <mat-cell *matCellDef="let row"> {{ row.labSequenceId }} </mat-cell>
   </ng-container>
-  
+
   <!-- FILE_ONE_NAME Definition -->
   <ng-container matColumnDef="fileOneName">
     <mat-header-cell *matHeaderCellDef> Sequenzdatei 1 </mat-header-cell>
@@ -97,10 +97,10 @@
 }
 
 <gem-demis-actions-bar>
-  <button id="cancel-process-btn" type="button" actions-left mat-stroked-button color="secondary" (click)="igsMeldungService.backToWelcome()">
-    Zurück zur Startseite
+  <button id="btn-reset-flow" type="button" actions-left mat-stroked-button color="secondary" (click)="igsMeldungService.backToWelcome()">
+    Prozess neu starten
   </button>
-  
+
   <button id="start-sequence-upload-btn" type="button" actions-right mat-flat-button color="primary" [disabled]="!igsMeldungService.canProceed()"
     (click)="igsMeldungService.proceed()">
     Sequenzen und Metadaten einreichen

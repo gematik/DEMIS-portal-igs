@@ -2,6 +2,13 @@
 
 # Release portal-igs
 
+## Release 1.3.2
+
+- add configmap checksum as annotation to force pod restart on configmap change
+- Update @angular-devkit/build-angular to 19.2.17
+- Updated button naming from "Zurück zur Startseite" to “Prozess neu starten”
+- Update NGINX-Base-Image to 1.29.3
+
 ## Release 1.3.1
 
 - dependencies updated
