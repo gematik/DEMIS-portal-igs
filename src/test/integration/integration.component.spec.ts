@@ -184,4 +184,97 @@ describe('Igs - Integration Tests', () => {
     fixture.detectChanges();
     expect(spies.exportToCsvFile).withContext('should call exportToCsvFile').toHaveBeenCalled();
   });
+
+  it('should go back to start flow before upload sequence data', async () => {
+    // load a CSV file
+    const csvFileSelect = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(csvFileSelect).toBeDefined();
+    (csvFileSelect.nativeElement as HTMLInputElement).files = mockFileList(['igs-test-data.csv']);
+    csvFileSelect.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    // send the CSV file to the IGS gateway
+    const sendButton = ngMocks.find(fixture.debugElement, 'button#send-csv-to-igs-gateway');
+    expect(sendButton).toBeDefined();
+    sendButton.nativeElement.click();
+    fixture.detectChanges();
+
+    // load necessary sequence files
+    const sequenceFileSelect = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(sequenceFileSelect).toBeDefined();
+    (sequenceFileSelect.nativeElement as HTMLInputElement).files = mockFileList(['Sample12346_R1.fastq', 'Sample12346_R2.fastq']);
+    sequenceFileSelect.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    // click restart process button
+    const cancelProcessButton = ngMocks.find(fixture.debugElement, 'button#btn-reset-flow');
+    expect(cancelProcessButton).toBeDefined();
+    expect(cancelProcessButton.nativeElement.textContent.trim()).toEqual('Prozess neu starten');
+    cancelProcessButton.nativeElement.click();
+    fixture.detectChanges();
+
+    // check if back to file select
+    const sequenceInputAfterReset = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(sequenceInputAfterReset).toBeDefined();
+  });
+
+  it('should go back to start flow after upload sequence data', async () => {
+    // load a CSV file
+    const csvFileSelect = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(csvFileSelect).toBeDefined();
+    (csvFileSelect.nativeElement as HTMLInputElement).files = mockFileList(['igs-test-data.csv']);
+    csvFileSelect.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    // send the CSV file to the IGS gateway
+    const sendButton = ngMocks.find(fixture.debugElement, 'button#send-csv-to-igs-gateway');
+    expect(sendButton).toBeDefined();
+    sendButton.nativeElement.click();
+    fixture.detectChanges();
+
+    // load necessary sequence files
+    const sequenceFileSelect = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(sequenceFileSelect).toBeDefined();
+    (sequenceFileSelect.nativeElement as HTMLInputElement).files = mockFileList(['Sample12346_R1.fastq', 'Sample12346_R2.fastq']);
+    sequenceFileSelect.nativeElement.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    // start the upload process and wait for it to finish
+    const startUploadButton = ngMocks.find(fixture.debugElement, 'button#start-sequence-upload-btn');
+    expect(startUploadButton).toBeDefined();
+    startUploadButton.nativeElement.click();
+    const retries = 100;
+    let tries = 0;
+    let showResultsButton = undefined;
+    do {
+      tries++;
+      fixture.detectChanges();
+      showResultsButton = ngMocks.find('button#us-btn-show-results:not([disabled])', undefined);
+      await setTimeout(() => {}, 100);
+    } while (tries < retries && !showResultsButton);
+    expect(showResultsButton).toBeDefined();
+    expect(spies.createDocumentReference).withContext('should call createDocumentReference').toHaveBeenCalled();
+    expect(spies.getFileUploadInfo).withContext('should call getFileUploadInfo').toHaveBeenCalled();
+    expect(spies.uploadSequenceFileChunk).withContext('should call uploadSequenceFileChunk').toHaveBeenCalled();
+    expect(spies.finishSequenceFileUpload).withContext('should call finishSequenceFileUpload').toHaveBeenCalled();
+    expect(spies.pollSequenceValidationResult).withContext('should call pollSequenceValidationResult').toHaveBeenCalled();
+    fixture.detectChanges();
+
+    //Upload Abbrechen
+    const cancel = ngMocks.find(fixture.debugElement, 'button#us-btn-cancel');
+    expect(cancel).toBeDefined();
+    cancel.nativeElement.click();
+    fixture.detectChanges();
+
+    // click restart process button
+    const restartProcessButton = ngMocks.find(fixture.debugElement, 'button#btn-reset-flow');
+    expect(restartProcessButton).toBeDefined();
+    expect(restartProcessButton.nativeElement.textContent.trim()).toEqual('Prozess neu starten');
+    restartProcessButton.nativeElement.click();
+    fixture.detectChanges();
+
+    // check if back to file select
+    const sequenceInputAfterReset = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(sequenceInputAfterReset).toBeDefined();
+  });
 });
