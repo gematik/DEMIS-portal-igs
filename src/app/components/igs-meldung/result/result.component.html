@@ -30,9 +30,9 @@
   </ng-template>
   <!-- /REUSABLE ICON TEMPLATES -->
 
-  <gem-demis-section-title titleText="Ergebnis" [level]="1">
+  <gem-demis-section-header titleText="Ergebnis" [level]="1">
     <p>Folgende Meldungen wurden übermittelt:</p>
-  </gem-demis-section-title>
+  </gem-demis-section-header>
 
   <br /><br />
 
@@ -91,9 +91,9 @@
       *matRowDef="let row; columns: ['notification', 'uploadTimestamp', 'demisNotificationId', 'labSequenceId', 'demisSequenceId']"></mat-row>
   </mat-table>
 } @else {
-  <gem-demis-section-title titleText="Keine Daten vorhanden" [level]="2">
+  <gem-demis-section-header titleText="Keine Daten vorhanden" [level]="2">
     <p>Es sind keine Ergebnisdaten von IGS-Meldungen vorhanden.</p>
-  </gem-demis-section-title>
+  </gem-demis-section-header>
 }
 
 

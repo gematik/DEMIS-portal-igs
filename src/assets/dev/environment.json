@@ -1,6 +1,12 @@
 {
-    "mfIgs": {
-        "igsGatewayUrl": "/gateway/igs",
-        "igsServiceUrl": "/surveillance/notification-sequence"
-    }
+  "mfIgs": {
+    "igsGatewayUrl": "/gateway/igs",
+    "igsServiceUrl": "/surveillance/notification-sequence",
+    "maxRetry": 40
+  },
+  "featureFlags": {
+    "FEATURE_FLAG_NEW_API_ENDPOINTS": false,
+    "FEATURE_FLAG_PORTAL_HEADER_FOOTER": true
+  }
 }
+

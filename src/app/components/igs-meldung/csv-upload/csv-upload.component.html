@@ -1,17 +1,17 @@
-<gem-demis-section-title titleText="Metadaten bereitstellen">
+<gem-demis-section-header titleText="Metadaten bereitstellen">
   <p>
     Stellen Sie die Metadaten in tabellarischer Form als CSV zur Verfügung.
     Jede Zeile in der Datei entspricht einer Meldung.
-    Sie erhalten eine Excel-Vorlage und weitere Informationen unter 
+    Sie erhalten eine Excel-Vorlage und weitere Informationen unter
     <a href="https://wiki.gematik.de/x/zMZyIg" target="_blank" rel="noopener noreferrer">https://wiki.gematik.de/x/zMZyIg</a>.
   </p>
-</gem-demis-section-title>
+</gem-demis-section-header>
 
 @if (igsMeldungSrv.csvFile$ | async; as csvFile) {
-  <gem-demis-section-title titleText="Metadaten hochladen" [level]="2">
+  <gem-demis-section-header titleText="Metadaten hochladen" [level]="2">
     <p>Sie haben folgende Datei ausgewählt:</p>
-  </gem-demis-section-title>
-  
+  </gem-demis-section-header>
+
   <gem-demis-file-name-chip
     [fileName]="csvFile.name"
     [fileSize]="csvFile.size"
@@ -34,10 +34,10 @@
   </gem-demis-actions-bar>
 }
 @else {
-  <gem-demis-section-title titleText="Metadaten hochladen" [level]="2">
+  <gem-demis-section-header titleText="Metadaten hochladen" [level]="2">
     <p>Bitte laden Sie hier die CSV-Datei hoch.</p>
-  </gem-demis-section-title>
-  
+  </gem-demis-section-header>
+
   <gem-demis-file-select displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
     (onFileSelected)="onFilesSelected($event)" acceptedFileTypes="text/csv"></gem-demis-file-select>
 

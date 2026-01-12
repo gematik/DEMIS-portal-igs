@@ -11,11 +11,13 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { Component, inject } from '@angular/core';
 import { IgsMeldungService } from './igs-meldung.service';
+import { ConfigService } from '../../config.service';
 
 @Component({
   selector: 'np-mf-igs-igs-meldung',
@@ -25,4 +27,9 @@ import { IgsMeldungService } from './igs-meldung.service';
 })
 export class IgsMeldungComponent {
   readonly igsMeldungSrv = inject(IgsMeldungService);
+  readonly config = inject(ConfigService);
+
+  get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
+    return this.config.isFeatureEnabled('FEATURE_FLAG_PORTAL_HEADER_FOOTER');
+  }
 }

@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 // Karma configuration file, see link for more information
@@ -66,7 +67,13 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: false,
-    browsers: ['ChromeHeadless'],
+    browsers: ['ChromeHeadlessNoSandbox'],
+    customLaunchers: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
+        flags: ['--no-sandbox'],
+      },
+    },
     singleRun: true,
     restartOnFileChange: false,
   });

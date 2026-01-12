@@ -13,3 +13,24 @@ mat-card-actions {
 #igs-stepped-process-content {
   padding: 16px;
 }
+
+
+:host ::ng-deep .mat-drawer-inner-container {
+  display: flex;
+  flex-direction: column;
+}
+
+:host ::ng-deep .info-tile-container {
+  display: flex;
+  flex: 1;
+}
+
+.side-menu-layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.side-menu-content {
+  flex: 1;
+}
