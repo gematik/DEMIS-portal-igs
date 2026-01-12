@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { isDevMode, NgModule } from '@angular/core';
@@ -48,10 +49,11 @@ import {
   FileNameChipComponent,
   FileSelectComponent,
   FileSizePipe,
+  FormsFooterComponent,
   MaxHeightContentContainerComponent,
   ProcessStepperComponent,
   SecondaryButtonDirective,
-  SectionTitleComponent,
+  SectionHeaderComponent,
   TiledContentComponent,
 } from '@gematik/demis-portal-core-library';
 import { ResultComponent } from './components/igs-meldung/result/result.component';
@@ -78,7 +80,7 @@ import { FhirValidationResponseService } from '../api/services/fhir-validation-r
       serverLogLevel: NgxLoggerLevel.OFF,
     }),
     MaxHeightContentContainerComponent,
-    SectionTitleComponent,
+    SectionHeaderComponent,
     TiledContentComponent,
     FileSelectComponent,
     FileNameChipComponent,
@@ -86,6 +88,7 @@ import { FhirValidationResponseService } from '../api/services/fhir-validation-r
     ActionsBarComponent,
     FileSizePipe,
     SecondaryButtonDirective,
+    FormsFooterComponent,
   ],
   providers: [
     ConfigService,

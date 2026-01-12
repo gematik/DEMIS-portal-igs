@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -141,7 +142,7 @@ export class IgsMeldungService {
   readonly fileUploads$ = this.fileUploadsSub$.asObservable();
   readonly notificationUploads$ = this.notificationUploadsSub$.asObservable();
 
-  private readonly maxFileSizeBytes = 1047527424;
+  private readonly maxFileSizeBytes = 2 * 1024 * 1024 * 1024;
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly logger = inject(NGXLogger);
   private readonly fileSizePipe = new FileSizePipe();

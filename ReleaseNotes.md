@@ -2,6 +2,15 @@
 
 # Release portal-igs
 
+## Release 1.3.3
+
+- maximum upload size has been increased to 2GB
+- maxRetries has been extraced to environment variable
+- Disabled Sandbox for ChromeHeadless browser to run karma tests in CI
+- Updated Base Image to 1.29.4-alpine3.23-slim
+- Updated @gematik/demis-portal-core-library to 2.3.8
+- Integrated form footer from core library
+
 ## Release 1.3.2
 
 - add configmap checksum as annotation to force pod restart on configmap change

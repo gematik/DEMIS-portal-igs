@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { TestBed } from '@angular/core/testing';
@@ -139,8 +140,9 @@ describe('IgsMeldungService', () => {
     });
   });
 
-  it('should update error if attached file to big', async () => {
-    const fileList = mockFileListWithBytes([igsBatchFastqTestdata.items[0].data.fileOneName, igsBatchFastqTestdata.items[0].data.fileTwoName], 1047527425);
+  it('should update error if attached file too big', async () => {
+    const bytesOver2GiB = 2 * 1024 * 1024 * 1024 + 1;
+    const fileList = mockFileListWithBytes([igsBatchFastqTestdata.items[0].data.fileOneName, igsBatchFastqTestdata.items[0].data.fileTwoName], bytesOver2GiB);
     const files = Array.from(fileList);
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     const messageDialog = TestBed.inject(MessageDialogService);
@@ -149,7 +151,7 @@ describe('IgsMeldungService', () => {
     service.attachFiles(fileList);
     expect(method).toHaveBeenCalledWith({
       errorTitle: 'Fehler beim Anhängen von Dateien',
-      errors: files.map(item => ({ text: `Die ausgewählte Sequenzdatei ${item.name} ist größer als das Upload-Limit 999.00 MB.` })),
+      errors: files.map(item => ({ text: `Die ausgewählte Sequenzdatei ${item.name} ist größer als das Upload-Limit 2.00 GB.` })),
     });
   });
 

@@ -2,13 +2,20 @@
   @if (igsMeldungSrv.activeStep$ | async; as activeStep) {
   <gem-demis-tiled-content id="igs-stepped-process-container">
     <ng-container infoTile>
-      <gem-demis-process-stepper
-        titleText="IGS"
-        subtitleText="Sammelübermittlung zur integrierten genomischen Surveillance vornehmen."
-        [steps]="igsMeldungSrv.steps"
-        [activeStep]="activeStep"
-      ></gem-demis-process-stepper>
-    </ng-container>
+    <div class="side-menu-layout">
+        <div class="side-menu-content">
+          <gem-demis-deprecated-process-stepper
+            titleText="IGS"
+            subtitleText="Sammelübermittlung zur integrierten genomischen Surveillance vornehmen."
+            [steps]="igsMeldungSrv.steps"
+            [activeStep]="activeStep"
+          ></gem-demis-deprecated-process-stepper>
+        </div>
+      @if (FEATURE_FLAG_PORTAL_HEADER_FOOTER) {
+        <gem-demis-forms-footer></gem-demis-forms-footer>
+      }
+      </div>
+   </ng-container>
 
     <ng-container contentTile>
       <div id="igs-stepped-process-content">

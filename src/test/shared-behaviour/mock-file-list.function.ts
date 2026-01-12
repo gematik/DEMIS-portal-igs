@@ -11,7 +11,8 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 export function mockFileList(fileNames: string[]): FileList {
@@ -21,7 +22,13 @@ export function mockFileList(fileNames: string[]): FileList {
 export function mockFileListWithBytes(fileNames: string[], byteSize: number): FileList {
   const mockedFiles = new DataTransfer();
   for (const fileName of fileNames) {
-    mockedFiles.items.add(new File([new Uint8Array(byteSize)], fileName, { type: 'text/html' }));
+    const mockedFile = new File(['x'], fileName, { type: 'text/html' });
+    Object.defineProperty(mockedFile, 'size', {
+      get: () => byteSize,
+      configurable: true,
+    });
+
+    mockedFiles.items.add(mockedFile);
   }
   return mockedFiles.files;
 }

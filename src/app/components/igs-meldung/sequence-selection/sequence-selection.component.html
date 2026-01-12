@@ -1,4 +1,4 @@
-<gem-demis-section-title titleText="Sequenzdateien auswählen">
+<gem-demis-section-header titleText="Sequenzdateien auswählen">
   <p>
     Wählen Sie bitte nachfolgend die den Metadaten zugehörigen Sequenzdateien aus.
     Die Dateien werden über den Dateinamen den korrekten Metadaten zugeordnet und
@@ -6,7 +6,7 @@
     bereitgestellt wurden. Durch Betätigung der Schaltfläche "Sequenzen und Metadaten
     einreichen" beginnt der Upload.
   </p>
-</gem-demis-section-title>
+</gem-demis-section-header>
 
 @if (igsMeldungService.sequenceFileSelectionOverviewData$ | async; as overviewData) {
 <!-- REUSABLE FILE ICON TEMPLATES -->
@@ -23,17 +23,17 @@
 </ng-template>
 <!-- /REUSABLE FILE ICON TEMPLATES -->
 
-<gem-demis-section-title titleText="Sequenzdateien hochladen" [level]="2">
+<gem-demis-section-header titleText="Sequenzdateien hochladen" [level]="2">
   <p>Bitte stellen Sie die zugehörigen Sequenzen bereit.</p>
-</gem-demis-section-title>
+</gem-demis-section-header>
 
 <gem-demis-file-select displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
   (onFileSelected)="onFilesSelected($event)" [multipleFilesSelectable]="true"></gem-demis-file-select>
 
 
-<gem-demis-section-title titleText="Übersicht der erforderlichen Sequenzen" [level]="2">
+<gem-demis-section-header titleText="Übersicht der erforderlichen Sequenzen" [level]="2">
   <p>Hier sehen Sie welche Sequenzen bereits korrekt zugeordnet wurden.</p>
-</gem-demis-section-title>
+</gem-demis-section-header>
 
 
 <mat-table [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2">
@@ -91,9 +91,9 @@
 </mat-table>
 }
 @else {
-<gem-demis-section-title titleText="Keine Daten vorhanden" [level]="2">
+<gem-demis-section-header titleText="Keine Daten vorhanden" [level]="2">
   <p>Es sind keine geparsten Metadaten von IGS-Meldungen vorhanden.</p>
-</gem-demis-section-title>
+</gem-demis-section-header>
 }
 
 <gem-demis-actions-bar>

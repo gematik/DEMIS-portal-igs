@@ -11,46 +11,60 @@
     In case of changes by gematik find details in the "Readme" file.
     See the Licence for the specific language governing permissions and limitations under the Licence.
     *******
-    For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+    For additional notes and disclaimer from gematik and in case of changes by gematik,
+    find details in the "Readme" file.
  */
 
 import { Injectable } from '@angular/core';
 import { assetUrl } from 'src/single-spa/asset-url';
 
-export interface SharedConfig {
-  igsGatewayUrl: string;
-  igsServiceUrl: string;
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class ConfigService {
-  private sharedConfig: SharedConfig | undefined = undefined;
+  private envConfig?: EnvironmentConfig;
 
   constructor() {
     let pathToEnvironment = assetUrl('../environment.json');
     fetch(pathToEnvironment)
       .then(response => response.json())
       .then(config => {
-        this.sharedConfig = config['mfIgs'];
+        this.envConfig = config;
       });
   }
 
   get igsGatewayUrl() {
-    return this.sharedConfig?.igsGatewayUrl;
+    return this.envConfig?.mfIgs.igsGatewayUrl;
   }
 
   get igsServiceUrl() {
-    const igsServiceUrl = this.sharedConfig?.igsServiceUrl;
-    return igsServiceUrl;
+    return this.envConfig?.mfIgs.igsServiceUrl;
   }
 
   get maxAttempts() {
-    return 40;
+    return this.envConfig?.mfIgs.maxRetry ?? 40;
   }
 
   get waitBetweenRetires() {
     return 1000;
   }
+
+  isFeatureEnabled(flag: string): boolean {
+    return this.envConfig?.featureFlags?.[flag] ?? false;
+  }
+}
+
+export interface FeatureFlags {
+  [key: string]: boolean;
+}
+
+export interface MfIgsConfig {
+  igsGatewayUrl: string;
+  igsServiceUrl: string;
+  maxRetry: number;
+}
+
+export interface EnvironmentConfig {
+  mfIgs: MfIgsConfig;
+  featureFlags?: FeatureFlags;
 }
