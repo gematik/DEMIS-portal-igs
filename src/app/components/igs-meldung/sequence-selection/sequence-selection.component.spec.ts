@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -24,6 +24,7 @@ import { mockFileList } from 'src/test/shared-behaviour/mock-file-list.function'
 import { igsBatchFastqSequenzdateienSelectOverview } from '../igs-batch-fastq.testdata';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { SequenceSelectionComponent } from './sequence-selection.component';
+import { ConfigService } from '../../../config.service';
 
 describe('SequenceSelectionComponent', () => {
   let fixture: MockedComponentFixture<SequenceSelectionComponent, SequenceSelectionComponent>;
@@ -78,5 +79,45 @@ describe('SequenceSelectionComponent', () => {
     component.onFilesSelected(fileList);
 
     expect(attachFilesSpy).toHaveBeenCalledWith(fileList);
+  });
+
+  describe('with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
+    let configService: ConfigService;
+
+    beforeEach(() => {
+      configService = TestBed.inject(ConfigService);
+      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+    });
+
+    it('should disable processSteps[0] control in ngOnInit', () => {
+      const processSteps = igsMeldungService.processSteps;
+      const disableSpy = spyOn(processSteps[0].control, 'disable');
+
+      component.ngOnInit();
+
+      expect(disableSpy).toHaveBeenCalled();
+    });
+
+    it('should call stepNavigationService.next() in proceed method', () => {
+      const stepNavigationService = { next: jasmine.createSpy('next') };
+      (component as any).stepNavigationService = stepNavigationService;
+      const proceedSpy = spyOn(igsMeldungService, 'proceed');
+
+      component.proceed();
+
+      expect(proceedSpy).toHaveBeenCalled();
+      expect(stepNavigationService.next).toHaveBeenCalled();
+    });
+
+    it('should call stepNavigationService.reset() in backToWelcome', () => {
+      const stepNavigationService = { reset: jasmine.createSpy('reset') };
+      (component as any).stepNavigationService = stepNavigationService;
+      const backToWelcomeSpy = spyOn(igsMeldungService, 'backToWelcome').and.callFake((callback: any) => callback());
+
+      component.backToWelcome();
+
+      expect(backToWelcomeSpy).toHaveBeenCalled();
+      expect(stepNavigationService.reset).toHaveBeenCalled();
+    });
   });
 });

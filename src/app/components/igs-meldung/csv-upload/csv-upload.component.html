@@ -19,8 +19,8 @@
     [canDelete]="!uploading$.value"
   ></gem-demis-file-name-chip>
 
-  <gem-demis-actions-bar>
-    <button id="send-csv-to-igs-gateway" type="button" actions-right mat-flat-button color="primary" (click)="onUseFile(csvFile)" [disabled]="!!uploading$.value">
+  <ng-template #uploadBtn>
+    <button id="send-csv-to-igs-gateway" type="button" mat-flat-button color="primary" (click)="onUseFile(csvFile)" [disabled]="!!uploading$.value">
       @if (!!uploading$.value) {
         <span class="with-prefix-spinner">
           <mat-spinner diameter="16"></mat-spinner>
@@ -31,7 +31,18 @@
         <span>Datei verwenden</span>
       }
     </button>
-  </gem-demis-actions-bar>
+  </ng-template>
+
+  @if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
+    <gem-demis-actions-bar>
+      <ng-container *ngTemplateOutlet="uploadBtn" actions-right></ng-container>
+    </gem-demis-actions-bar>
+  }
+  @else {
+    <ng-template #actionsRight>
+      <ng-container *ngTemplateOutlet="uploadBtn"></ng-container>
+    </ng-template>
+  }
 }
 @else {
   <gem-demis-section-header titleText="Metadaten hochladen" [level]="2">
@@ -41,15 +52,33 @@
   <gem-demis-file-select displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
     (onFileSelected)="onFilesSelected($event)" acceptedFileTypes="text/csv"></gem-demis-file-select>
 
-  <gem-demis-actions-bar>
-    @if(showProceedToLastResults()) {
-      <button id="last-results" type="button" actions-left mat-stroked-button color="secondary" (click)="navigateToLastResults()">
-        Letzten Report abrufen
+    <ng-template #showLastResultsBtn>
+      @if(showProceedToLastResults()) {
+        <button id="last-results" type="button" mat-stroked-button color="secondary" (click)="navigateToLastResults()">
+          Letzten Report abrufen
+        </button>
+      }
+    </ng-template>
+    
+    <ng-template #dummyUploadBtn>
+      <button type="button" mat-flat-button color="primary" [disabled]="true">
+        Datei verwenden
       </button>
-    }
+    </ng-template>
+    
 
-    <button type="button" actions-right mat-flat-button color="primary" [disabled]="true">
-      Datei verwenden
-    </button>
-  </gem-demis-actions-bar>
+  @if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
+    <gem-demis-actions-bar>
+      <ng-container *ngTemplateOutlet="showLastResultsBtn" actions-left></ng-container>
+      <ng-container *ngTemplateOutlet="dummyUploadBtn" actions-right></ng-container>
+    </gem-demis-actions-bar>
+  }
+  @else {
+    <ng-template #actionsLeft>
+      <ng-container *ngTemplateOutlet="showLastResultsBtn"></ng-container>
+    </ng-template>
+    <ng-template #actionsRight>
+      <ng-container *ngTemplateOutlet="dummyUploadBtn"></ng-container>
+    </ng-template>
+  }
 }

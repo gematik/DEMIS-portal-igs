@@ -119,10 +119,11 @@ config:
   mfIgs:
     igsGatewayUrl: /gateway/igs
     igsServiceUrl: /surveillance/notification-sequence
-    maxRetry: 40
+    maxRetry: 60
   featureFlags:
     FEATURE_FLAG_NEW_API_ENDPOINTS: false
     FEATURE_FLAG_PORTAL_HEADER_FOOTER: false
+    FEATURE_FLAG_PORTAL_IGS_SIDENAV: false
   newApiEndpoints:
     mfIgs:
       igsServiceUrl: /surveillance/notification-sequence/v3/fhir

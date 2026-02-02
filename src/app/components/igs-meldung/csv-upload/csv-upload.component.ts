@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -16,11 +16,12 @@
  */
 
 import { Component, inject, OnDestroy } from '@angular/core';
-import { ErrorMessage, MessageDialogService } from '@gematik/demis-portal-core-library';
+import { ErrorMessage, MessageDialogService, StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
+import { ConfigService } from '../../../config.service';
 
 @Component({
   selector: 'np-mf-igs-csv-upload',
@@ -28,12 +29,19 @@ import { IgsMeldung } from '../igs-meldung.types';
   styleUrl: './csv-upload.component.scss',
   standalone: false,
 })
-export class CsvUploadStepComponent implements OnDestroy {
+export class CsvUploadComponent extends StepContentComponent<void> implements OnDestroy {
   readonly uploading$ = new BehaviorSubject<boolean>(false);
   readonly igsMeldungSrv = inject(IgsMeldungService);
   private readonly meldungsdatenCsvFileUploadSrv = inject(MeldungsdatenCsvFileUploadService);
   private readonly unsubscriber = new Subject<void>();
   private readonly messageDialogService = inject(MessageDialogService);
+  private readonly configService = inject(ConfigService);
+  // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
+  private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+
+  get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
+    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
+  }
 
   ngOnDestroy(): void {
     this.unsubscriber.next();
@@ -63,6 +71,9 @@ export class CsvUploadStepComponent implements OnDestroy {
             this.igsMeldungSrv.useParsedCsvOverviewData(uploadData.payload as IgsMeldung.OverviewResponse);
             this.uploading$.next(false);
             this.igsMeldungSrv.proceed();
+            if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
+              this.stepNavigationService?.next();
+            }
           }
         },
         error: errorData => {
@@ -93,5 +104,18 @@ export class CsvUploadStepComponent implements OnDestroy {
 
   navigateToLastResults() {
     this.igsMeldungSrv.proceedToResultStep();
+    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
+      this.igsMeldungSrv.processSteps.forEach(step => {
+        step.control.enable();
+      });
+      for (let i = 0; i < 3; i++) {
+        this.stepNavigationService?.next();
+      }
+      this.igsMeldungSrv.processSteps.forEach(step => {
+        if (step.key !== 'result') {
+          step.control.disable();
+        }
+      });
+    }
   }
 }

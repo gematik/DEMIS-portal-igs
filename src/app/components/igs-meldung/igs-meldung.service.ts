@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -16,16 +16,18 @@
  */
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable, Signal, WritableSignal, computed, inject, signal } from '@angular/core';
-import { ErrorMessage, FileSizePipe, MessageDialogService, Step } from '@gematik/demis-portal-core-library';
+import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { ErrorMessage, FileSizePipe, MessageDialogService, ProcessStep, Step } from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, lastValueFrom, map, Subject } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
+import { FhirValidationResponseService } from 'src/api/services/fhir-validation-response.service';
 import { MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { ChunkUploadResponse, SequenceUploadService, UploadSequenceFileChunkParams, UploadSequenceFileParams } from 'src/api/services/sequence-upload.service';
 import { UploadProgress } from 'src/shared/shared-functions';
-import { FhirValidationResponseService } from 'src/api/services/fhir-validation-response.service';
 import { IgsMeldung } from './igs-meldung.types';
+import { ConfigService } from 'src/app/config.service';
 
 export enum IgsLocalStorageKeys {
   FILE_UPLOADS = 'IGS_FILE_UPLOADS',
@@ -52,28 +54,45 @@ export type UploadError = {
   clipboardContent?: string;
 };
 
-const IGS_STEPS: Step[] = [
+/**
+ * ProcessSteps with FormControls for the new SideNavigationComponent
+ */
+export const IGS_PROCESS_STEPS: ProcessStep[] = [
   {
-    number: 1,
-    title: 'Metadaten bereitstellen',
+    key: 'csv-upload',
+    label: 'Metadaten bereitstellen',
     description: 'Bereitstellung der Metadaten in tabellarischer Form',
+    control: new FormControl<boolean | null>({ value: null, disabled: false }, [Validators.required]),
   },
   {
-    number: 2,
-    title: 'Sequenzdateien auswählen',
+    key: 'sequence-selection',
+    label: 'Sequenzdateien auswählen',
     description: 'Bereitstellung der zugehörigen Sequenzdateien',
+    control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
   },
   {
-    number: 3,
-    title: 'Status des Uploads',
+    key: 'upload-status',
+    label: 'Status des Uploads',
     description: 'Hochladen der Sequenzdateien und Übermittlung an das RKI',
+    control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
   },
   {
-    number: 4,
-    title: 'Ergebnis',
+    key: 'result',
+    label: 'Ergebnis',
     description: 'Zusammenfassung der Übermittlungen',
+    control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
   },
 ];
+
+// remove this constant when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
+const IGS_STEPS: Step[] = IGS_PROCESS_STEPS.map(
+  (step, index) =>
+    ({
+      number: index + 1,
+      title: step.label,
+      description: step.description,
+    }) as Step
+);
 
 const IGS_INITIAL_STATE = {
   csvFile: null,
@@ -150,15 +169,34 @@ export class IgsMeldungService {
   private readonly sequenceUploadService = inject(SequenceUploadService);
   private readonly meldungSubmitService = inject(MeldungSubmitService);
   private readonly fhirValidationResponseService = inject(FhirValidationResponseService);
+  private readonly configService = inject(ConfigService);
 
+  // remove this getter when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
   get steps() {
     return IGS_STEPS;
+  }
+
+  get processSteps() {
+    return IGS_PROCESS_STEPS;
   }
 
   proceed() {
     const currentStepIndex = IGS_STEPS.indexOf(this.activeStepSub$.value);
     if (currentStepIndex < IGS_STEPS.length - 1 && this.canProceed()) {
-      this.activeStepSub$.next(IGS_STEPS[currentStepIndex + 1]);
+      if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
+        // Mark current step as valid
+        IGS_PROCESS_STEPS[currentStepIndex].control.setValue(true);
+        IGS_PROCESS_STEPS[currentStepIndex].control.markAsTouched();
+        IGS_PROCESS_STEPS[currentStepIndex].control.updateValueAndValidity();
+      }
+
+      // Activate next step
+      const nextStepIndex = currentStepIndex + 1;
+      this.activeStepSub$.next(IGS_STEPS[nextStepIndex]);
+      if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
+        // Because of the linear mode, enable the next step's control
+        IGS_PROCESS_STEPS[nextStepIndex].control.enable();
+      }
     }
   }
 
@@ -205,7 +243,26 @@ export class IgsMeldungService {
     this.uploadCanceledSubject.next(true);
   }
 
-  backToWelcome() {
+  /**
+   * Resets the IGS meldung workflow back to the welcome step.
+   * @param resetCallback Optional callback for resetting navigation. Currently only used when FEATURE_FLAG_PORTAL_IGS_SIDENAV is enabled.
+   * TODO: Make this parameter required once FEATURE_FLAG_PORTAL_IGS_SIDENAV is removed and becomes the default behavior.
+   */
+  backToWelcome(resetCallback?: () => void) {
+    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
+      this.processSteps.forEach(step => {
+        step.control.enable();
+      });
+      // Do the navigational reset via the StepNavigationService
+      resetCallback?.();
+      // Reset all step controls
+      this.processSteps.forEach(step => {
+        if (step.key !== 'csv-upload') {
+          step.control.reset();
+          step.control.disable();
+        }
+      });
+    }
     this.csvFileSub$.next(null);
     this.activeStepSub$.next(IGS_STEPS[0]);
     this.overviewDataSub$.next(null);

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -19,14 +19,15 @@ import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { MockBuilder, MockedComponentFixture, MockProvider, MockRender } from 'ng-mocks';
+import { MockBuilder, MockedComponentFixture, MockRender, ngMocks } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { BehaviorSubject } from 'rxjs';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
 import { AppModule } from 'src/app/app.module';
-import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from 'src/app/components/igs-meldung/igs-meldung.service';
+import { IgsLocalStorageKeys, IgsMeldungService, UploadError, IGS_PROCESS_STEPS } from 'src/app/components/igs-meldung/igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
 import { ResultComponent } from './result.component';
+import { ConfigService } from 'src/app/config.service';
 
 declare type IndexAccessible = Record<string, unknown>;
 
@@ -66,24 +67,34 @@ describe('ResultComponent', () => {
     },
   ];
 
-  beforeEach(() =>
-    MockBuilder([ResultComponent, AppModule])
-      .provide(
-        MockProvider(IgsMeldungService, {
-          rowErrorsSub$: new BehaviorSubject(mockErrors),
-          lastBatchUploadFinishedAt: computed(() => downloadTimestamp),
-        } as Partial<IgsMeldungService>)
-      )
-      .mock(LoggerModule)
-      .mock(MessageDialogService)
-      .mock(ExportToFileService)
-  );
+  let igsMeldungService: IgsMeldungService;
+
+  beforeEach(() => MockBuilder([ResultComponent, AppModule]).mock(LoggerModule).mock(MessageDialogService).mock(ExportToFileService));
 
   beforeEach(() => {
+    // Set localStorage for upload errors before initializing the service
+    localStorage.setItem(IgsLocalStorageKeys.UPLOAD_ERRORS, JSON.stringify(mockErrors));
+
+    // Flush TestBed before MockRender to avoid ng-mocks warning
+    ngMocks.flushTestBed();
+
     fixture = MockRender(ResultComponent);
     component = fixture.componentInstance;
 
+    // Get the service instance that the component is using
+    igsMeldungService = component.igsMeldungService;
+
+    // Override the observable properties with test data
+    // Must replace the entire property, not just assign a value
+    (igsMeldungService as any).rowErrorsSub$ = new BehaviorSubject(mockErrors);
+    (igsMeldungService as any).lastBatchUploadFinishedAt = computed(() => downloadTimestamp);
+
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    // Clean up localStorage to ensure test isolation
+    localStorage.clear();
   });
 
   it('should create', () => {
@@ -124,7 +135,8 @@ describe('ResultComponent', () => {
   it('should have a download button with correct filename attibute', () => {
     const downloadButton = fixture.debugElement.nativeElement.querySelector('button#btn-report-download');
     expect(downloadButton).toBeTruthy();
-    expect(downloadButton.getAttribute('demis-igs-filename')).toContain('igs-meldung-report__' + downloadTimestamp.toISOString().replace(/:/g, '-'));
+    const expectedFilename = 'igs-meldung-report__' + downloadTimestamp.toISOString().replace(/:/g, '-');
+    expect(downloadButton.getAttribute('demis-igs-filename')).toBe(expectedFilename);
   });
 
   it('should download report', () => {
@@ -169,5 +181,35 @@ describe('ResultComponent', () => {
     ];
     const expectedReportFilename = 'igs-meldung-report__' + downloadTimestamp.toISOString().replace(/:/g, '-');
     expect(exportToFileService.exportToCsvFile).toHaveBeenCalledWith(expectedReportFilename, expectedExportableNotificationUploadInfo);
+  });
+
+  describe('with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
+    let configService: ConfigService;
+    let igsMeldungService: IgsMeldungService;
+
+    beforeEach(() => {
+      configService = TestBed.inject(ConfigService);
+      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+      igsMeldungService = TestBed.inject(IgsMeldungService);
+    });
+
+    it('should disable processSteps[2] in ngOnInit', () => {
+      component.ngOnInit();
+      expect(igsMeldungService.processSteps[2].control.disabled).toBe(true);
+    });
+
+    it('should call stepNavigationService.reset() in backToWelcome callback', () => {
+      const mockStepNavigationService = { reset: jasmine.createSpy('reset') };
+      (component as any).stepNavigationService = mockStepNavigationService;
+
+      component.backToWelcome();
+
+      expect(mockStepNavigationService.reset).toHaveBeenCalled();
+      // Verify that processSteps are properly reset
+      expect(igsMeldungService.processSteps[0].control.disabled).toBe(false);
+      expect(igsMeldungService.processSteps[1].control.disabled).toBe(true);
+      expect(igsMeldungService.processSteps[2].control.disabled).toBe(true);
+      expect(igsMeldungService.processSteps[3].control.disabled).toBe(true);
+    });
   });
 });

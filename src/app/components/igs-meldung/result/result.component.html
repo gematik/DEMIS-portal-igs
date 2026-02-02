@@ -96,13 +96,29 @@
   </gem-demis-section-header>
 }
 
-
-<gem-demis-actions-bar>
-  <button id="btn-reset-flow" type="button" actions-left mat-stroked-button color="secondary" (click)="igsMeldungService.backToWelcome()">
+<ng-template #resetBtn>
+  <button id="btn-reset-flow" type="button" mat-stroked-button color="secondary" (click)="backToWelcome()">
     Prozess neu starten
   </button>
+</ng-template>
 
-  <button id="btn-report-download" [attr.demis-igs-filename]="resultReportFilename" type="button" actions-right mat-flat-button color="primary" (click)="downloadReport()">
+<ng-template #downloadReportBtn>
+  <button id="btn-report-download" [attr.demis-igs-filename]="resultReportFilename" type="button" mat-flat-button color="primary" (click)="downloadReport()">
     Report herunterladen
   </button>
-</gem-demis-actions-bar>
+</ng-template>
+
+@if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
+  <gem-demis-actions-bar>
+    <ng-container *ngTemplateOutlet="resetBtn" actions-left></ng-container>
+    <ng-container *ngTemplateOutlet="downloadReportBtn" actions-right></ng-container>
+  </gem-demis-actions-bar>
+}
+@else {
+  <ng-template #actionsLeft>
+    <ng-container *ngTemplateOutlet="resetBtn"></ng-container>
+  </ng-template>
+  <ng-template #actionsRight>
+    <ng-container *ngTemplateOutlet="downloadReportBtn"></ng-container>
+  </ng-template>
+}

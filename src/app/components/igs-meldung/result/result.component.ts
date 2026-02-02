@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -15,12 +15,13 @@
     find details in the "Readme" file.
  */
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MessageDialogService, StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
+import { ConfigService } from '../../../config.service';
 import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
 
@@ -30,11 +31,18 @@ import { IgsMeldung } from '../igs-meldung.types';
   styleUrl: './result.component.scss',
   standalone: false,
 })
-export class ResultComponent {
+export class ResultComponent extends StepContentComponent<void> implements OnInit {
   readonly igsMeldungService = inject(IgsMeldungService);
   private readonly logger = inject(NGXLogger);
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly exportToFileService = inject(ExportToFileService);
+  private readonly configService = inject(ConfigService);
+  // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
+  private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+
+  get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
+    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
+  }
   private readonly fallbackFilenameSuffix = new Date().toISOString().replace(/:/g, '-');
 
   private getRowErrors(): UploadError[] {
@@ -46,6 +54,12 @@ export class ResultComponent {
       return 'igs-meldung-report__' + this.igsMeldungService.lastBatchUploadFinishedAt()?.toISOString().replace(/:/g, '-');
     }
     return 'igs-meldung-report__' + this.fallbackFilenameSuffix;
+  }
+
+  ngOnInit(): void {
+    if (this.FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
+      this.igsMeldungService.processSteps[2].control.disable();
+    }
   }
 
   toDataSource(results: IgsMeldung.NotificationUploadInfo[]): MatTableDataSource<IgsMeldung.NotificationUploadInfo, MatPaginator> {
@@ -89,7 +103,7 @@ export class ResultComponent {
         status: item.status.toString(),
         uploadTimestamp: this.determineUploadTimestamp(item),
         demisSequenceId: item.demisSequenceId ?? 'n/a',
-        errors: aggregatedErrorMessages ? aggregatedErrorMessages : '',
+        errors: aggregatedErrorMessages ?? '',
       } as IgsMeldung.ExportableNotificationUploadInfo;
     });
 
@@ -102,5 +116,9 @@ export class ResultComponent {
     } else {
       return item.uploadTimestamp;
     }
+  }
+
+  backToWelcome() {
+    this.igsMeldungService.backToWelcome(() => this.stepNavigationService?.reset());
   }
 }

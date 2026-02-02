@@ -209,15 +209,32 @@
   </gem-demis-section-header>
 }
 
-<gem-demis-actions-bar>
-  <button id="us-btn-cancel" type="button" actions-left mat-stroked-button color="secondary"
-          (click)="igsMeldungService.cancel()">
+<ng-template #cancelBtn>
+  <button id="us-btn-cancel" type="button" mat-stroked-button color="secondary" (click)="cancel()">
     Abbrechen
   </button>
+</ng-template>
 
-  <button id="us-btn-show-results" type="button" actions-right mat-flat-button color="primary"
-          [disabled]="!igsMeldungService.canProceed()"
-          (click)="igsMeldungService.proceed()">
+<ng-template #showResultsBtn>
+  <button id="us-btn-show-results" type="button" mat-flat-button color="primary"
+          [disabled]="!igsMeldungService.canProceed()" (click)="proceed()">
     Ergebnisse anzeigen
   </button>
-</gem-demis-actions-bar>
+</ng-template>
+
+@if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
+  <gem-demis-actions-bar>
+    <ng-container *ngTemplateOutlet="cancelBtn" actions-left></ng-container>
+    <ng-container *ngTemplateOutlet="showResultsBtn" actions-right></ng-container>
+  </gem-demis-actions-bar>
+}
+@else {
+  @if (!igsMeldungService.canProceed()) {
+    <ng-template #actionsLeft>
+      <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
+    </ng-template>
+  }
+  <ng-template #actionsRight>
+    <ng-container *ngTemplateOutlet="showResultsBtn"></ng-container>
+  </ng-template>
+}

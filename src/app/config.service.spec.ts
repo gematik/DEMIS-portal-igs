@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -36,13 +36,28 @@ describe('ConfigService', () => {
     let fetchSpy: jasmine.Spy;
 
     beforeEach(() => {
-      fetchSpy = spyOn(window, 'fetch').and.returnValue(
-        Promise.resolve({
-          ok: true,
-          status: 200,
-          json: () => Promise.resolve(envConfig),
-        } as Response)
-      );
+      // Check if fetch is already spied upon
+      const isSpy = (window.fetch as any).and !== undefined;
+      if (isSpy) {
+        // Reset the spy with new return value
+        fetchSpy = window.fetch as jasmine.Spy;
+        fetchSpy.and.returnValue(
+          Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(envConfig),
+          } as Response)
+        );
+      } else {
+        // Create new spy
+        fetchSpy = spyOn(window, 'fetch').and.returnValue(
+          Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(envConfig),
+          } as Response)
+        );
+      }
       TestBed.configureTestingModule({
         providers: [ConfigService],
       });
@@ -82,7 +97,7 @@ describe('ConfigService', () => {
 
     it('should return safe defaults before config is loaded', () => {
       expect(service.isFeatureEnabled('FEATURE_FLAG_PORTAL_HEADER_FOOTER')).toBeFalse();
-      expect(service.maxAttempts).toEqual(40);
+      expect(service.maxAttempts).toEqual(60);
     });
   });
 });

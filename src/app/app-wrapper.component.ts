@@ -15,18 +15,26 @@
     find details in the "Readme" file.
  */
 
-const singleSpaAngularWebpack = require('single-spa-angular/lib/webpack').default;
+import { Component, inject } from '@angular/core';
+import { ConfigService } from './config.service';
 
-module.exports = (angularWebpackConfig, options) => {
-  const singleSpaWebpackConfig = singleSpaAngularWebpack(angularWebpackConfig, options);
-
-  // Suppress CommonJS warnings specifically for style-loader runtime modules
-  singleSpaWebpackConfig.ignoreWarnings = [
-    /node_modules\/style-loader\/dist\/runtime.*CommonJS or AMD dependencies/,
-    /styles\.scss.*depends on.*style-loader\/dist\/runtime.*CommonJS or AMD dependencies/,
-    /main\.single-spa\.ts.*depends on.*systemjs-webpack-interop.*CommonJS or AMD dependencies/,
-  ];
-
-  // Feel free to modify this webpack config however you'd like to
-  return singleSpaWebpackConfig;
-};
+/**
+ * Temporary workaround!
+ *
+ * Remove this component once FEATURE_FLAG_PORTAL_IGS_SIDENAV is removed and load the
+ * corresponding component directly via the Angular router.
+ */
+@Component({
+  selector: 'np-mf-igs-app-wrapper',
+  template: `
+    @if (configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
+      <np-mf-igs-notification></np-mf-igs-notification>
+    } @else {
+      <np-mf-igs-igs-meldung></np-mf-igs-igs-meldung>
+    }
+  `,
+  standalone: false,
+})
+export class AppWrapperComponent {
+  readonly configService = inject(ConfigService);
+}

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -38,11 +38,15 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { MatDialogModule } from '@angular/material/dialog';
-import { IgsMeldungComponent } from './components/igs-meldung/igs-meldung.component';
-import { CsvUploadStepComponent } from './components/igs-meldung/csv-upload/csv-upload.component';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { IgsMeldungService } from './components/igs-meldung/igs-meldung.service';
+import { IgsMeldungComponent } from './components/igs-meldung/igs-meldung.component';
+import { CsvUploadComponent } from './components/igs-meldung/csv-upload/csv-upload.component';
+import { ResultComponent } from './components/igs-meldung/result/result.component';
 import { SequenceSelectionComponent } from './components/igs-meldung/sequence-selection/sequence-selection.component';
 import { UploadStatusComponent } from './components/igs-meldung/upload-status/upload-status.component';
+import { AppWrapperComponent } from './app-wrapper.component';
+import { IgsNotificationComponent } from './igs-notification/igs-notification.component';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import {
   ActionsBarComponent,
@@ -54,13 +58,22 @@ import {
   ProcessStepperComponent,
   SecondaryButtonDirective,
   SectionHeaderComponent,
+  SideNavigationComponent,
   TiledContentComponent,
 } from '@gematik/demis-portal-core-library';
-import { ResultComponent } from './components/igs-meldung/result/result.component';
 import { FhirValidationResponseService } from '../api/services/fhir-validation-response.service';
 
 @NgModule({
-  declarations: [AppComponent, IgsMeldungComponent, CsvUploadStepComponent, SequenceSelectionComponent, UploadStatusComponent, ResultComponent],
+  declarations: [
+    AppComponent,
+    AppWrapperComponent,
+    IgsMeldungComponent,
+    IgsNotificationComponent,
+    CsvUploadComponent,
+    ResultComponent,
+    SequenceSelectionComponent,
+    UploadStatusComponent,
+  ],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -74,6 +87,7 @@ import { FhirValidationResponseService } from '../api/services/fhir-validation-r
     MatDividerModule,
     MatProgressSpinnerModule,
     MatTableModule,
+    MatPaginatorModule,
     MatDialogModule,
     LoggerModule.forRoot({
       level: isDevMode() ? NgxLoggerLevel.DEBUG : NgxLoggerLevel.ERROR,
@@ -81,6 +95,7 @@ import { FhirValidationResponseService } from '../api/services/fhir-validation-r
     }),
     MaxHeightContentContainerComponent,
     SectionHeaderComponent,
+    SideNavigationComponent,
     TiledContentComponent,
     FileSelectComponent,
     FileNameChipComponent,
