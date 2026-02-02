@@ -6,7 +6,8 @@
   },
   "featureFlags": {
     "FEATURE_FLAG_NEW_API_ENDPOINTS": false,
-    "FEATURE_FLAG_PORTAL_HEADER_FOOTER": true
+    "FEATURE_FLAG_PORTAL_HEADER_FOOTER": true,
+    "FEATURE_FLAG_PORTAL_IGS_SIDENAV": true
   }
 }
 

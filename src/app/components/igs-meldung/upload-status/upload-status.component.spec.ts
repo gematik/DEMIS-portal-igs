@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -23,7 +23,8 @@ import { AppModule } from 'src/app/app.module';
 import { igsBatchFastqSequenzdateienSelectOverview } from '../igs-batch-fastq.testdata';
 import { UploadStatusComponent } from './upload-status.component';
 import { MessageDialogService } from '@gematik/demis-portal-core-library';
-import { UploadError } from '../igs-meldung.service';
+import { UploadError, IgsMeldungService } from '../igs-meldung.service';
+import { ConfigService } from 'src/app/config.service';
 
 describe('UploadStatus', () => {
   let fixture: MockedComponentFixture<UploadStatusComponent, UploadStatusComponent>;
@@ -70,5 +71,52 @@ describe('UploadStatus', () => {
     component.onClickUploadError(1);
     const { rowNumber, ...expectedError } = mockErrors[0];
     expect(spy).toHaveBeenCalledWith(expectedError);
+  });
+
+  describe('with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
+    let configService: ConfigService;
+    let igsMeldungService: IgsMeldungService;
+
+    beforeEach(() => {
+      configService = TestBed.inject(ConfigService);
+      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+      igsMeldungService = TestBed.inject(IgsMeldungService);
+    });
+
+    it('should disable processSteps[0] and processSteps[1] in ngOnInit', () => {
+      spyOn(igsMeldungService, 'uploadNotifications');
+      component.ngOnInit();
+      expect(igsMeldungService.processSteps[0].control.disabled).toBe(true);
+      expect(igsMeldungService.processSteps[1].control.disabled).toBe(true);
+      expect(igsMeldungService.uploadNotifications).toHaveBeenCalled();
+    });
+
+    it('should call stepNavigationService.next() in proceed', () => {
+      spyOn(igsMeldungService, 'proceed');
+      const mockStepNavigationService = { next: jasmine.createSpy('next') };
+      (component as any).stepNavigationService = mockStepNavigationService;
+      component.proceed();
+      expect(igsMeldungService.proceed).toHaveBeenCalled();
+      expect(mockStepNavigationService.next).toHaveBeenCalled();
+    });
+
+    it('should call stepNavigationService.next() in cancel and update processSteps[2] and processSteps[3]', () => {
+      spyOn(igsMeldungService, 'cancel');
+      const mockStepNavigationService = { next: jasmine.createSpy('next') };
+      (component as any).stepNavigationService = mockStepNavigationService;
+      const step2Control = igsMeldungService.processSteps[2].control;
+      const step3Control = igsMeldungService.processSteps[3].control;
+      spyOn(step2Control, 'setValue');
+      spyOn(step2Control, 'markAsTouched');
+      spyOn(step2Control, 'updateValueAndValidity');
+      spyOn(step3Control, 'enable');
+      component.cancel();
+      expect(igsMeldungService.cancel).toHaveBeenCalled();
+      expect(step2Control.setValue).toHaveBeenCalledWith(null);
+      expect(step2Control.markAsTouched).toHaveBeenCalled();
+      expect(step2Control.updateValueAndValidity).toHaveBeenCalled();
+      expect(step3Control.enable).toHaveBeenCalled();
+      expect(mockStepNavigationService.next).toHaveBeenCalled();
+    });
   });
 });

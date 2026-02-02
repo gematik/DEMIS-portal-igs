@@ -2,6 +2,11 @@
 
 # Release portal-igs
 
+## Release 1.3.4
+
+- Added new generic side navigation component from core library with FEATURE_FLAG_PORTAL_IGS_SIDENAV
+- maxRetries has been increased to 60 (15 mins) for upload and validation requests
+
 ## Release 1.3.3
 
 - maximum upload size has been increased to 2GB

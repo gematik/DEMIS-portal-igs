@@ -114,6 +114,7 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
+            "main": "src/test-setup.ts",
             "polyfills": [
               "zone.js",
               "zone.js/testing"
@@ -130,8 +131,10 @@
             "scripts": [],
             "codeCoverage": true,
             "codeCoverageExclude": [
-              "src/test/**/*"
-            ]
+              "src/test/**/*",
+              "src/test-setup.ts"
+            ],
+            "preserveSymlinks": true
           }
         }
       }

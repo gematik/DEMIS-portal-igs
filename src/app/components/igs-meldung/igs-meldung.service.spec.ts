@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2025 gematik GmbH
+    Copyright (c) 2026 gematik GmbH
     Licensed under the EUPL, Version 1.2 or - as soon they will be approved by the
     European Commission – subsequent versions of the EUPL (the "Licence").
     You may not use this work except in compliance with the Licence.
@@ -30,6 +30,7 @@ import { igsBatchFastqSequenzdateienSelectOverview, igsBatchFastqTestdata, uploa
 import { IgsLocalStorageKeys, IgsMeldungService, SEARCH_STRINGS, UploadError } from './igs-meldung.service';
 import { IgsMeldung } from './igs-meldung.types';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ConfigService } from 'src/app/config.service';
 
 const exampleOpperationOutcomeString = JSON.stringify(
   {
@@ -990,5 +991,32 @@ describe('IgsMeldungService', () => {
       },
     ];
     expect(initializedResultEntries).toEqual(JSON.stringify(expectedResultEntries));
+  });
+
+  describe('proceed with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
+    let configService: ConfigService;
+
+    beforeEach(() => {
+      configService = TestBed.inject(ConfigService);
+      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+    });
+
+    it('should mark current step as valid and enable next step when proceeding', () => {
+      const currentStepControl = service.processSteps[0].control;
+      const nextStepControl = service.processSteps[1].control;
+
+      spyOn(currentStepControl, 'setValue').and.callThrough();
+      spyOn(currentStepControl, 'markAsTouched').and.callThrough();
+      spyOn(currentStepControl, 'updateValueAndValidity').and.callThrough();
+      spyOn(nextStepControl, 'enable').and.callThrough();
+      spyOn(service, 'canProceed').and.returnValue(true);
+
+      service.proceed();
+
+      expect(currentStepControl.setValue).toHaveBeenCalledWith(true);
+      expect(currentStepControl.markAsTouched).toHaveBeenCalled();
+      expect(currentStepControl.updateValueAndValidity).toHaveBeenCalled();
+      expect(nextStepControl.enable).toHaveBeenCalled();
+    });
   });
 });

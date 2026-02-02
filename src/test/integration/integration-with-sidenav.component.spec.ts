@@ -17,32 +17,61 @@
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { DebugElement } from '@angular/core';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender, ngMocks } from 'ng-mocks';
 import { LoggerModule } from 'ngx-logger';
 import { lastValueFrom, of } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
+import { ExportToFileService } from 'src/api/services/export-to-file.service';
 import { FhirValidationResponseService } from 'src/api/services/fhir-validation-response.service';
 import { MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
 import { ChunkUploadResponse, SequenceUploadService, SequenceValidationInfo, UploadProcessInfo } from 'src/api/services/sequence-upload.service';
 import { AppModule } from 'src/app/app.module';
 import { igsBatchFastqTestdata } from 'src/app/components/igs-meldung/igs-batch-fastq.testdata';
-import { IgsMeldungComponent } from 'src/app/components/igs-meldung/igs-meldung.component';
 import { IgsMeldungService } from 'src/app/components/igs-meldung/igs-meldung.service';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
+import { ConfigService } from 'src/app/config.service';
 import { UploadProgress } from 'src/shared/shared-functions';
 import { mockFileList } from '../shared-behaviour/mock-file-list.function';
-import { ExportToFileService } from 'src/api/services/export-to-file.service';
+import { AppWrapperComponent } from 'src/app/app-wrapper.component';
 
 /**
- * TODO: This test suite tests the legacy IgsMeldungComponent without feature flags.
- * Once FEATURE_FLAG_PORTAL_IGS_SIDENAV and FEATURE_FLAG_PORTAL_HEADER_FOOTER are removed,
- * this file should be deleted and integration-with-sidenav.component.spec.ts should become
- * the main integration test file.
+ * Integration tests for IgsNotificationComponent with SideNavigation (FEATURE_FLAG_PORTAL_IGS_SIDENAV).
+ *
+ * Once FEATURE_FLAG_PORTAL_IGS_SIDENAV and FEATURE_FLAG_PORTAL_HEADER_FOOTER are removed and become
+ * the default behavior, this file should be renamed to integration.component.spec.ts and replace
+ * the legacy test file.
  */
-describe('Igs - Integration Tests', () => {
-  let fixture: MockedComponentFixture<IgsMeldungComponent, IgsMeldungComponent>;
-  let component: IgsMeldungComponent;
+describe('Igs - Integration Tests (with FEATURE_FLAG_PORTAL_IGS_SIDENAV)', () => {
+  let fixture: MockedComponentFixture<AppWrapperComponent, AppWrapperComponent>;
+  let component: AppWrapperComponent;
+  let igsMeldungService: IgsMeldungService;
+
+  /**
+   * Helper function to trigger change detection cycles and wait for async operations to complete.
+   * Even though observables are mocked with synchronous of(), the component lifecycle and
+   * service methods like uploadNotifications() are genuinely async and need to complete.
+   * This waits for real async operations, not artificial timeouts.
+   *
+   * Currently runs 2 cycles which is sufficient for this component hierarchy:
+   * - Cycle 1: AppWrapper/IgsNotification async operations
+   * - Cycle 2: Child components (e.g., UploadStatusComponent.ngOnInit()) async operations
+   *
+   * If the component hierarchy grows deeper and components at deeper levels start async operations,
+   * additional cycles would be needed. The test would fail fast in that case, making it obvious.
+   */
+  async function flushChanges(): Promise<void> {
+    // Wait for all pending async operations (like service.uploadNotifications())
+    await fixture.whenStable();
+    // Trigger change detection to update the DOM with the results of async operations
+    fixture.detectChanges();
+    // After detectChanges(), nested components may trigger their own async operations in ngOnInit().
+    // Wait for those to complete as well (e.g., UploadStatusComponent calls uploadNotifications() in ngOnInit).
+    await fixture.whenStable();
+    // Final change detection to render the results of those nested async operations
+    fixture.detectChanges();
+  }
 
   let documentReferenceCounter = 1;
 
@@ -113,25 +142,57 @@ describe('Igs - Integration Tests', () => {
         exportToCsvFile: spies.exportToCsvFile,
       } as Partial<ExportToFileService>;
     },
+    get configService() {
+      return {
+        isFeatureEnabled: jasmine.createSpy('isFeatureEnabled').and.callFake((flag: string) => {
+          if (flag === 'FEATURE_FLAG_PORTAL_IGS_SIDENAV') return true;
+          if (flag === 'FEATURE_FLAG_PORTAL_HEADER_FOOTER') return true;
+          return false;
+        }),
+        igsGatewayUrl: 'http://localhost:8080/gateway',
+        igsServiceUrl: 'http://localhost:8080/service',
+        maxAttempts: 40,
+        waitBetweenRetires: 1000,
+      } as Partial<ConfigService>;
+    },
   };
 
   beforeEach(() =>
-    MockBuilder([IgsMeldungComponent, AppModule])
+    MockBuilder([AppWrapperComponent, AppModule])
+      .keep(IgsMeldungService)
       .mock(LoggerModule)
-      .provide(IgsMeldungService)
       .provide(MockProvider(MeldungsdatenCsvFileUploadService, overrides.meldungsdatenCsvFileUploadService))
       .provide(MockProvider(DocumentReferenceService, overrides.documentReferenceService))
       .provide(MockProvider(SequenceUploadService, overrides.sequenceUploadService))
       .provide(MockProvider(MeldungSubmitService, overrides.meldungSubmitService))
       .provide(MockProvider(FhirValidationResponseService, overrides.fhirValidationResponseService))
       .provide(MockProvider(ExportToFileService, overrides.exportToFileService))
+      .provide(MockProvider(ConfigService, overrides.configService))
       .provide(provideHttpClient(withInterceptorsFromDi()))
       .provide(provideHttpClientTesting())
   );
 
   beforeEach(() => {
-    fixture = MockRender(IgsMeldungComponent);
+    fixture = MockRender(AppWrapperComponent);
     component = fixture.point.componentInstance;
+
+    // Get IgsMeldungService instance and reset state before each test
+    igsMeldungService = fixture.point.injector.get(IgsMeldungService);
+    igsMeldungService.backToWelcome();
+
+    fixture.detectChanges();
+
+    // Reset spies
+    Object.values(spies).forEach(spy => {
+      if (typeof spy.calls !== 'undefined') {
+        spy.calls.reset();
+      }
+    });
+  });
+
+  beforeEach(async () => {
+    // Trigger initial change detection for SideNavigation to render the first step
+    await flushChanges();
   });
 
   it('should create', () => {
@@ -160,19 +221,16 @@ describe('Igs - Integration Tests', () => {
     sequenceFileSelect.nativeElement.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
-    // start the upload process and wait for it to finish
+    // start the upload process
     const startUploadButton = ngMocks.find(fixture.debugElement, 'button#start-sequence-upload-btn');
     expect(startUploadButton).toBeDefined();
     startUploadButton.nativeElement.click();
-    const retries = 100;
-    let tries = 0;
-    let showResultsButton = undefined;
-    do {
-      tries++;
-      fixture.detectChanges();
-      showResultsButton = ngMocks.find('button#us-btn-show-results:not([disabled])', undefined);
-      await setTimeout(() => {}, 100);
-    } while (tries < retries && !showResultsButton);
+
+    // Wait for async uploadNotifications() to complete
+    await flushChanges();
+
+    // Now the "Show Results" button should be enabled
+    const showResultsButton = ngMocks.find('button#us-btn-show-results:not([disabled])');
     expect(showResultsButton).toBeDefined();
     expect(spies.createDocumentReference).withContext('should call createDocumentReference').toHaveBeenCalled();
     expect(spies.getFileUploadInfo).withContext('should call getFileUploadInfo').toHaveBeenCalled();
@@ -181,7 +239,7 @@ describe('Igs - Integration Tests', () => {
     expect(spies.pollSequenceValidationResult).withContext('should call pollSequenceValidationResult').toHaveBeenCalled();
 
     // show the results
-    showResultsButton?.nativeElement.click();
+    showResultsButton.nativeElement.click();
     fixture.detectChanges();
 
     // download the results as CSV report
@@ -218,11 +276,19 @@ describe('Igs - Integration Tests', () => {
     expect(cancelProcessButton).toBeDefined();
     expect(cancelProcessButton.nativeElement.textContent.trim()).toEqual('Prozess neu starten');
     cancelProcessButton.nativeElement.click();
-    fixture.detectChanges();
 
-    // check if back to file select
-    const sequenceInputAfterReset = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
-    expect(sequenceInputAfterReset).toBeDefined();
+    // Wait for navigation to complete
+    await flushChanges();
+
+    // check if back to CSV upload step by looking for the specific section header text
+    const csvUploadContent = ngMocks.findAll(fixture.debugElement, 'gem-demis-section-header');
+    expect(csvUploadContent.length).toBeGreaterThan(0);
+    const metadatenHeader = csvUploadContent.find(el => el.nativeElement.textContent.includes('Metadaten bereitstellen'));
+    expect(metadatenHeader).toBeDefined();
+
+    // verify the file select input is present
+    const fileSelectAfterReset = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(fileSelectAfterReset).toBeDefined();
   });
 
   it('should go back to start flow after upload sequence data', async () => {
@@ -246,42 +312,48 @@ describe('Igs - Integration Tests', () => {
     sequenceFileSelect.nativeElement.dispatchEvent(new Event('change'));
     fixture.detectChanges();
 
-    // start the upload process and wait for it to finish
+    // start the upload process
     const startUploadButton = ngMocks.find(fixture.debugElement, 'button#start-sequence-upload-btn');
     expect(startUploadButton).toBeDefined();
     startUploadButton.nativeElement.click();
-    const retries = 100;
-    let tries = 0;
-    let showResultsButton = undefined;
-    do {
-      tries++;
-      fixture.detectChanges();
-      showResultsButton = ngMocks.find('button#us-btn-show-results:not([disabled])', undefined);
-      await setTimeout(() => {}, 100);
-    } while (tries < retries && !showResultsButton);
+
+    // Wait for async uploadNotifications() to complete
+    await flushChanges();
+
+    // Now the "Show Results" button should be enabled
+    const showResultsButton = ngMocks.find('button#us-btn-show-results:not([disabled])');
     expect(showResultsButton).toBeDefined();
     expect(spies.createDocumentReference).withContext('should call createDocumentReference').toHaveBeenCalled();
     expect(spies.getFileUploadInfo).withContext('should call getFileUploadInfo').toHaveBeenCalled();
     expect(spies.uploadSequenceFileChunk).withContext('should call uploadSequenceFileChunk').toHaveBeenCalled();
     expect(spies.finishSequenceFileUpload).withContext('should call finishSequenceFileUpload').toHaveBeenCalled();
     expect(spies.pollSequenceValidationResult).withContext('should call pollSequenceValidationResult').toHaveBeenCalled();
+
+    // Note: In the SideNavigation version, the cancel button is only visible while upload is in progress.
+    // Once upload is complete (canProceed() returns true), the cancel button is hidden.
+    // Therefore, we proceed to results instead of canceling.
+
+    // show the results
+    showResultsButton.nativeElement.click();
     fixture.detectChanges();
 
-    //Upload Abbrechen
-    const cancel = ngMocks.find(fixture.debugElement, 'button#us-btn-cancel');
-    expect(cancel).toBeDefined();
-    cancel.nativeElement.click();
-    fixture.detectChanges();
-
-    // click restart process button
+    // click restart process button from the results page
     const restartProcessButton = ngMocks.find(fixture.debugElement, 'button#btn-reset-flow');
     expect(restartProcessButton).toBeDefined();
     expect(restartProcessButton.nativeElement.textContent.trim()).toEqual('Prozess neu starten');
     restartProcessButton.nativeElement.click();
-    fixture.detectChanges();
 
-    // check if back to file select
-    const sequenceInputAfterReset = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
-    expect(sequenceInputAfterReset).toBeDefined();
+    // Wait for navigation to complete
+    await flushChanges();
+
+    // check if back to CSV upload step by looking for the specific section header text
+    const csvUploadContent = ngMocks.findAll(fixture.debugElement, 'gem-demis-section-header');
+    expect(csvUploadContent.length).toBeGreaterThan(0);
+    const metadatenHeader = csvUploadContent.find(el => el.nativeElement.textContent.includes('Metadaten bereitstellen'));
+    expect(metadatenHeader).toBeDefined();
+
+    // verify the file select input is present
+    const fileSelectAfterReset = ngMocks.find(fixture.debugElement, 'gem-demis-file-select input[type="file"]');
+    expect(fileSelectAfterReset).toBeDefined();
   });
 });
