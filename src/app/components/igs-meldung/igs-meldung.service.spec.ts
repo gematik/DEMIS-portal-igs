@@ -78,6 +78,11 @@ describe('IgsMeldungService', () => {
     service = TestBed.inject(IgsMeldungService);
   });
 
+  afterEach(() => {
+    // Clean up localStorage to ensure test isolation
+    localStorage.clear();
+  });
+
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
@@ -365,7 +370,13 @@ describe('IgsMeldungService', () => {
 
   it('should not proceed if notifications are not uploaded', async () => {
     spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').and.returnValue(
-      throwError(() => ({ progress: 100, error: 'something went wrong' }) as UploadProgress<IgsMeldung.OverviewResponse>)
+      throwError(
+        () =>
+          ({
+            progress: 100,
+            error: 'something went wrong',
+          }) as UploadProgress<IgsMeldung.OverviewResponse>
+      )
     );
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
@@ -892,7 +903,11 @@ describe('IgsMeldungService', () => {
     expect(rowErrorsSub.value).toEqual(JSON.parse(uploadErrors));
 
     const activeStepSub = service['activeStepSub$'] as BehaviorSubject<Step>;
-    expect(activeStepSub.value).toEqual({ number: 4, title: 'Ergebnis', description: 'Zusammenfassung der Übermittlungen' });
+    expect(activeStepSub.value).toEqual({
+      number: 4,
+      title: 'Ergebnis',
+      description: 'Zusammenfassung der Übermittlungen',
+    });
   });
 
   it('should not start to send any notification if upload was canceled', async () => {

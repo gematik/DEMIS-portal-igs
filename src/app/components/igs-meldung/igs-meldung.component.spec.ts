@@ -39,12 +39,15 @@ describe('IgsMeldungComponent', () => {
   );
 
   beforeEach(() => {
-    fixture = MockRender(IgsMeldungComponent);
+    // Use detectChanges: false to prevent NG0100 errors in Angular 21
+    // Don't call detectChanges() here - let each test control when it happens
+    fixture = MockRender(IgsMeldungComponent, undefined, { detectChanges: false });
     component = fixture.point.componentInstance;
     configService = ngMocks.findInstance(ConfigService);
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(fixture).toBeDefined();
     expect(component).toBeTruthy();
   });

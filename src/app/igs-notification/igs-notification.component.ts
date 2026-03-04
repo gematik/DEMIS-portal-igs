@@ -22,6 +22,7 @@ import { IgsMeldungService } from '../components/igs-meldung/igs-meldung.service
 import { ResultComponent } from '../components/igs-meldung/result/result.component';
 import { SequenceSelectionComponent } from '../components/igs-meldung/sequence-selection/sequence-selection.component';
 import { UploadStatusComponent } from '../components/igs-meldung/upload-status/upload-status.component';
+import { ConfigService } from '../config.service';
 
 /**
  * Container component for the IGS notification process using the new SideNavigationComponent.
@@ -31,9 +32,19 @@ import { UploadStatusComponent } from '../components/igs-meldung/upload-status/u
   selector: 'np-mf-igs-notification',
   templateUrl: './igs-notification.component.html',
   standalone: false,
+  styles: `
+    :host ::ng-deep .hide-accessibility-link .footer-link[href='#accessibility-statement'] {
+      display: none;
+    }
+  `,
 })
 export class IgsNotificationComponent {
   protected readonly igsMeldungService = inject(IgsMeldungService);
+  private readonly configService = inject(ConfigService);
+
+  get deactivatedFeatureFlagForFormsFooter() {
+    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_ACCESSIBILITY');
+  }
 
   private readonly stepContents = computed(() => [
     createStepContent({ component: CsvUploadComponent }),

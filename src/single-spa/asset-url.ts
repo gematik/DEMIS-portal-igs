@@ -19,9 +19,11 @@
 // instead of hard coded to `/assets`. We use webpack public path for this.
 // See https://webpack.js.org/guides/public-path/#root
 
+declare const __webpack_public_path__: string | undefined;
+
 export function assetUrl(url: string): string {
-  // @ts-ignore
-  const publicPath = __webpack_public_path__;
+  // Fallback for test environment where __webpack_public_path__ is not defined
+  const publicPath = typeof __webpack_public_path__ !== 'undefined' ? __webpack_public_path__ : '/';
   const publicPathSuffix = publicPath.endsWith('/') ? '' : '/';
   const urlPrefix = url.startsWith('/') ? '' : '/';
 

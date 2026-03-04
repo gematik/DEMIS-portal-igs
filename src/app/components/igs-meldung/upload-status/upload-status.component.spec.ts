@@ -84,7 +84,7 @@ describe('UploadStatus', () => {
     });
 
     it('should disable processSteps[0] and processSteps[1] in ngOnInit', () => {
-      spyOn(igsMeldungService, 'uploadNotifications');
+      spyOn(igsMeldungService, 'uploadNotifications').and.returnValue(Promise.resolve());
       component.ngOnInit();
       expect(igsMeldungService.processSteps[0].control.disabled).toBe(true);
       expect(igsMeldungService.processSteps[1].control.disabled).toBe(true);

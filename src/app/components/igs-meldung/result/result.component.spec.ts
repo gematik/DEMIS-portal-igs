@@ -78,7 +78,8 @@ describe('ResultComponent', () => {
     // Flush TestBed before MockRender to avoid ng-mocks warning
     ngMocks.flushTestBed();
 
-    fixture = MockRender(ResultComponent);
+    // Use detectChanges: false to prevent NG0100 errors in Angular 21
+    fixture = MockRender(ResultComponent, undefined, { detectChanges: false });
     component = fixture.componentInstance;
 
     // Get the service instance that the component is using
@@ -88,8 +89,6 @@ describe('ResultComponent', () => {
     // Must replace the entire property, not just assign a value
     (igsMeldungService as any).rowErrorsSub$ = new BehaviorSubject(mockErrors);
     (igsMeldungService as any).lastBatchUploadFinishedAt = computed(() => downloadTimestamp);
-
-    fixture.detectChanges();
   });
 
   afterEach(() => {
@@ -98,6 +97,7 @@ describe('ResultComponent', () => {
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
@@ -133,6 +133,7 @@ describe('ResultComponent', () => {
   });
 
   it('should have a download button with correct filename attibute', () => {
+    fixture.detectChanges();
     const downloadButton = fixture.debugElement.nativeElement.querySelector('button#btn-report-download');
     expect(downloadButton).toBeTruthy();
     const expectedFilename = 'igs-meldung-report__' + downloadTimestamp.toISOString().replace(/:/g, '-');
