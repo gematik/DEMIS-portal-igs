@@ -28,7 +28,7 @@ module.exports = function (config) {
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
       require('karma-sonarqube-unit-reporter'),
-      require('@angular-devkit/build-angular/plugins/karma'),
+      require('@angular/build/private'),
     ],
     customLaunchers: {
       Chrome_silenced: {

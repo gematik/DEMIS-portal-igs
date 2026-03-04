@@ -15,13 +15,14 @@
     find details in the "Readme" file.
  */
 
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MessageDialogService, StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
 import { IgsMeldungService } from 'src/app/components/igs-meldung/igs-meldung.service';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
 import { ConfigService } from '../../../config.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'np-mf-igs-upload-status',
@@ -29,12 +30,14 @@ import { ConfigService } from '../../../config.service';
   styleUrl: './upload-status.component.scss',
   standalone: false,
 })
-export class UploadStatusComponent extends StepContentComponent<void> implements OnInit {
+export class UploadStatusComponent extends StepContentComponent<void> implements OnInit, OnDestroy {
   igsMeldungService = inject(IgsMeldungService);
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly configService = inject(ConfigService);
+  private readonly cdr = inject(ChangeDetectorRef);
   // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
   private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+  private readonly destroy$ = new Subject<void>();
 
   get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
     return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
@@ -49,7 +52,24 @@ export class UploadStatusComponent extends StepContentComponent<void> implements
       this.igsMeldungService.processSteps[0].control.disable();
       this.igsMeldungService.processSteps[1].control.disable();
     }
-    this.igsMeldungService.uploadNotifications();
+
+    // Subscribe to rowErrorsSub$ to trigger change detection when errors change
+    // This prevents NG0100 errors when hasErrorData() is called in templates
+    this.igsMeldungService.rowErrorsSub$.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+
+    // Subscribe to upload observables to trigger change detection when upload status changes
+    this.igsMeldungService.notificationUploads$.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+    this.igsMeldungService.fileUploads$.pipe(takeUntil(this.destroy$)).subscribe(() => this.cdr.markForCheck());
+
+    // Start upload and mark for check after async operations complete
+    this.igsMeldungService.uploadNotifications()?.then(() => {
+      this.cdr.markForCheck();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   toDataSource(overviewData: IgsMeldung.SequenzdateienSelectOverview[]): MatTableDataSource<IgsMeldung.SequenzdateienSelectOverview, MatPaginator> {

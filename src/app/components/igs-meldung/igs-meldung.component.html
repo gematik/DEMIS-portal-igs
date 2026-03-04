@@ -12,7 +12,7 @@
           ></gem-demis-deprecated-process-stepper>
         </div>
       @if (FEATURE_FLAG_PORTAL_HEADER_FOOTER) {
-        <gem-demis-forms-footer></gem-demis-forms-footer>
+        <gem-demis-forms-footer [featureFlagPortal]="FEATURE_FLAG_PORTAL_ACCESSIBILITY" [featureFlagFooterLink]="FEATURE_FLAG_FOOTER_LINKS_CORRECTION"></gem-demis-forms-footer>
       }
       </div>
    </ng-container>

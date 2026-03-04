@@ -32,4 +32,12 @@ export class IgsMeldungComponent {
   get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
     return this.config.isFeatureEnabled('FEATURE_FLAG_PORTAL_HEADER_FOOTER');
   }
+
+  get FEATURE_FLAG_PORTAL_ACCESSIBILITY(): boolean {
+    return this.config.isFeatureEnabled('FEATURE_FLAG_PORTAL_ACCESSIBILITY');
+  }
+
+  get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
+    return this.config.isFeatureEnabled('FEATURE_FLAG_FOOTER_LINKS_CORRECTION');
+  }
 }

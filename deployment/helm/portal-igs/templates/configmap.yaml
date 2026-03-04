@@ -1,7 +1,4 @@
 {{- $configMapData := deepCopy .Values.config }}
-{{- $_ := unset $configMapData "newApiEndpoints" }}
-{{- $endpointsRoot := ternary .Values.config.newApiEndpoints .Values.config (eq (.Values.config.featureFlags.FEATURE_FLAG_NEW_API_ENDPOINTS | toString) "true" ) }}
-{{- $_ = set $configMapData "mfIgs" (deepCopy $endpointsRoot.mfIgs | mergeOverwrite (deepCopy .Values.config.mfIgs) ) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:

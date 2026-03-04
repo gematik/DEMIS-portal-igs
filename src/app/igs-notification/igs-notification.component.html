@@ -1,5 +1,5 @@
 <gem-demis-max-height-content-container [elementSelectorsToSubtract]="['app-navbar']">
-  <gem-demis-side-navigation #sideNav sideNavTitle="IGS" [stepsMap]="stepsMap()">
+  <gem-demis-side-navigation #sideNav sideNavTitle="IGS" [stepsMap]="stepsMap()" [ngClass]="{'hide-accessibility-link': !deactivatedFeatureFlagForFormsFooter}">
     <!-- Subtitle for the side navigation -->
     <ng-template #sideNavSubtitle>
       <p>Sammelübermittlung zur integrierten genomischen Surveillance vornehmen.</p>

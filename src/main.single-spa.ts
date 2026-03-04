@@ -15,7 +15,7 @@
     find details in the "Readme" file.
  */
 
-import { NgZone } from '@angular/core';
+import { NgZone, provideZoneChangeDetection } from '@angular/core';
 
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { Router, NavigationStart } from '@angular/router';
@@ -30,7 +30,9 @@ const appId = 'notification-portal-mf-igs';
 const lifecycles = singleSpaAngular({
   bootstrapFunction: singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
-    return platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule);
+    return platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule, {
+      applicationProviders: [provideZoneChangeDetection()],
+    });
   },
   template: '<app-surveillance-root />',
   Router,

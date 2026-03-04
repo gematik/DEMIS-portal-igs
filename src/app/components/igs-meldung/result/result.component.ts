@@ -43,6 +43,7 @@ export class ResultComponent extends StepContentComponent<void> implements OnIni
   get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
     return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
   }
+
   private readonly fallbackFilenameSuffix = new Date().toISOString().replace(/:/g, '-');
 
   private getRowErrors(): UploadError[] {
@@ -100,7 +101,7 @@ export class ResultComponent extends StepContentComponent<void> implements OnIni
         rowNumber: item.rowNumber,
         demisNotificationId: item.demisNotificationId,
         labSequenceId: item.labSequenceId,
-        status: item.status.toString(),
+        status: item.status ? item.status.toString() : 'UNKNOWN',
         uploadTimestamp: this.determineUploadTimestamp(item),
         demisSequenceId: item.demisSequenceId ?? 'n/a',
         errors: aggregatedErrorMessages ?? '',
