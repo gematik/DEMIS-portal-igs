@@ -2,7 +2,12 @@
 
 # Release portal-igs
 
+## Release 1.4.1
+
+- Dependency updates because of GHSA-g93w-mfhg-p222
+
 ## Release 1.4.0
+
 - Updated Angular to v21
 - Updated @gematik/demis-portal-core-library to 2.4.4
 - Added accessibility statement footer link (FEATURE_FLAG_PORTAL_ACCESSIBILITY)
