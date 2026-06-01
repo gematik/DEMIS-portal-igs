@@ -16,27 +16,70 @@
  */
 
 import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MessageDialogService, StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
+import {
+  MessageDialogService,
+  StepContentComponent,
+  StepNavigation,
+  SectionHeaderComponent,
+  SecondaryButtonDirective,
+  ActionsBarComponent,
+} from '@gematik/demis-portal-core-library';
 import { IgsMeldungService } from 'src/app/components/igs-meldung/igs-meldung.service';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
 import { ConfigService } from '../../../config.service';
 import { Subject, takeUntil } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { NgTemplateOutlet, AsyncPipe, DatePipe } from '@angular/common';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'np-mf-igs-upload-status',
   templateUrl: './upload-status.component.html',
   styleUrl: './upload-status.component.scss',
-  standalone: false,
+  imports: [
+    SectionHeaderComponent,
+    MatIcon,
+    MatIconButton,
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    NgTemplateOutlet,
+    MatProgressSpinner,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatButton,
+    SecondaryButtonDirective,
+    ActionsBarComponent,
+    AsyncPipe,
+    DatePipe,
+  ],
 })
 export class UploadStatusComponent extends StepContentComponent<void> implements OnInit, OnDestroy {
   igsMeldungService = inject(IgsMeldungService);
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly configService = inject(ConfigService);
   private readonly cdr = inject(ChangeDetectorRef);
-  // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-  private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+  private readonly stepNavigationService = inject(StepNavigation);
   private readonly destroy$ = new Subject<void>();
 
   get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
@@ -98,14 +141,14 @@ export class UploadStatusComponent extends StepContentComponent<void> implements
       // enable the result step
       this.igsMeldungService.processSteps[3].control.enable();
       // navigate to the result step
-      this.stepNavigationService?.next();
+      this.stepNavigationService.next();
     }
   }
 
   proceed() {
     this.igsMeldungService.proceed();
     if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.stepNavigationService?.next();
+      this.stepNavigationService.next();
     }
   }
 }

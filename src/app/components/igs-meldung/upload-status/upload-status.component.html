@@ -1,4 +1,4 @@
-<gem-demis-section-header titleText="Status des Uploads">
+<gem-demis-section-header id="demis-igs-upload-status-page-header" titleText="Status des Uploads">
   <p>
     Die ausgewählten Sequenzen werden nun automatisiert hochgeladen und verarbeitet.
     Aus den bereitgestellten Informationen werden anschließend automatisiert die Meldungen erstellt und übermittelt.
@@ -54,7 +54,7 @@
 
   <ng-template #sequenceError let-rowNumber="rowNumber">
     @if(hasErrorData()) {
-      <button mat-icon-button class="error"
+      <button id="upload-status-btn-sequence-error-{{ rowNumber }}" mat-icon-button class="error"
               title="Die Sequenzdaten konnte nicht übermittelt werden"
               (click)="onClickUploadError(rowNumber)">
         <mat-icon>error</mat-icon>
@@ -68,11 +68,11 @@
   </ng-template>
   <!-- /REUSABLE ICON TEMPLATES -->
 
-  <gem-demis-section-header titleText="Status" [level]="2">
+  <gem-demis-section-header id="demis-igs-upload-status-section-header" titleText="Status" [level]="2">
     <p>Folgende Meldungen werden übermittelt</p>
   </gem-demis-section-header>
 
-  <mat-table [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2" [id]="'upload-status-table'">
+  <mat-table id="demis-igs-upload-status-table" [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2" [id]="'upload-status-table'">
     <!-- NOTIFICATION Definition -->
     <ng-container matColumnDef="notification">
       <mat-header-cell *matHeaderCellDef> Meldung übermittelt</mat-header-cell>
@@ -198,13 +198,13 @@
     </ng-container>
 
     <!-- Header and Row Declarations -->
-    <mat-header-row
+    <mat-header-row id="demis-igs-upload-status-header-row"
       *matHeaderRowDef="['notification', 'dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']; sticky: true"></mat-header-row>
-    <mat-row
-      *matRowDef="let row; columns: ['notification', 'dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']"></mat-row>
+    <mat-row id="demis-igs-upload-status-row-{{ index }}"
+      *matRowDef="let row; let index = index; columns: ['notification', 'dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']"></mat-row>
   </mat-table>
 } @else {
-  <gem-demis-section-header titleText="Keine Daten vorhanden" [level]="2">
+  <gem-demis-section-header id="demis-igs-no-data-section-header" titleText="Keine Daten vorhanden" [level]="2">
     <p>Es sind keine geparsten Metadaten von IGS-Meldungen vorhanden.</p>
   </gem-demis-section-header>
 }

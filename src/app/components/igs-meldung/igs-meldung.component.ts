@@ -18,12 +18,28 @@
 import { Component, inject } from '@angular/core';
 import { IgsMeldungService } from './igs-meldung.service';
 import { ConfigService } from '../../config.service';
+import { MaxHeightContentContainerComponent, TiledContentComponent, ProcessStepperComponent, FormsFooterComponent } from '@gematik/demis-portal-core-library';
+import { CsvUploadComponent } from './csv-upload/csv-upload.component';
+import { SequenceSelectionComponent } from './sequence-selection/sequence-selection.component';
+import { UploadStatusComponent } from './upload-status/upload-status.component';
+import { ResultComponent } from './result/result.component';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'np-mf-igs-igs-meldung',
   templateUrl: './igs-meldung.component.html',
   styleUrl: './igs-meldung.component.scss',
-  standalone: false,
+  imports: [
+    MaxHeightContentContainerComponent,
+    TiledContentComponent,
+    ProcessStepperComponent,
+    FormsFooterComponent,
+    CsvUploadComponent,
+    SequenceSelectionComponent,
+    UploadStatusComponent,
+    ResultComponent,
+    AsyncPipe,
+  ],
 })
 export class IgsMeldungComponent {
   readonly igsMeldungSrv = inject(IgsMeldungService);

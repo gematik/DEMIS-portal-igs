@@ -22,8 +22,7 @@ import { RouterOutlet } from '@angular/router';
 describe('AppComponent', () => {
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      imports: [RouterOutlet],
-      declarations: [AppComponent],
+      imports: [RouterOutlet, AppComponent],
     }).compileComponents();
   });
 

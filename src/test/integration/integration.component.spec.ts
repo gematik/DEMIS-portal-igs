@@ -18,21 +18,27 @@
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender, ngMocks } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { lastValueFrom, of } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
 import { FhirValidationResponseService } from 'src/api/services/fhir-validation-response.service';
 import { MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
 import { ChunkUploadResponse, SequenceUploadService, SequenceValidationInfo, UploadProcessInfo } from 'src/api/services/sequence-upload.service';
-import { AppModule } from 'src/app/app.module';
 import { igsBatchFastqTestdata } from 'src/app/components/igs-meldung/igs-batch-fastq.testdata';
 import { IgsMeldungComponent } from 'src/app/components/igs-meldung/igs-meldung.component';
 import { IgsMeldungService } from 'src/app/components/igs-meldung/igs-meldung.service';
+import { provideStepNavigation, MaxHeightContentContainerComponent, TiledContentComponent } from '@gematik/demis-portal-core-library';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
 import { UploadProgress } from 'src/shared/shared-functions';
 import { mockFileList } from '../shared-behaviour/mock-file-list.function';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
+import { CsvUploadComponent } from 'src/app/components/igs-meldung/csv-upload/csv-upload.component';
+import { SequenceSelectionComponent } from 'src/app/components/igs-meldung/sequence-selection/sequence-selection.component';
+import { UploadStatusComponent } from 'src/app/components/igs-meldung/upload-status/upload-status.component';
+import { ResultComponent } from 'src/app/components/igs-meldung/result/result.component';
+import { ConfigService } from 'src/app/config.service';
+import { AsyncPipe } from '@angular/common';
 
 /**
  * TODO: This test suite tests the legacy IgsMeldungComponent without feature flags.
@@ -53,14 +59,19 @@ describe('Igs - Integration Tests', () => {
         payload: { items: [igsBatchFastqTestdata.items[0]] } as IgsMeldung.OverviewResponse,
       } as UploadProgress<IgsMeldung.OverviewResponse>)
     ),
-    createDocumentReference: jasmine
-      .createSpy('createDocumentReference')
-      .and.returnValue(
-        of({ documentReferenceId: `DR4711-${documentReferenceCounter++}`, sequenceUploadUrl: 'http://upload-to-this.url' } as CreateDocumentReferenceResponse)
-      ),
-    getFileUploadInfo: jasmine
-      .createSpy('getFileUploadInfo')
-      .and.returnValue(of({ uploadId: 'UL4711', presignedUrls: ['http://upload-chunk-to-this.url'], partSizeBytes: 9999999999 } as UploadProcessInfo)),
+    createDocumentReference: jasmine.createSpy('createDocumentReference').and.returnValue(
+      of({
+        documentReferenceId: `DR4711-${documentReferenceCounter++}`,
+        sequenceUploadUrl: 'http://upload-to-this.url',
+      } as CreateDocumentReferenceResponse)
+    ),
+    getFileUploadInfo: jasmine.createSpy('getFileUploadInfo').and.returnValue(
+      of({
+        uploadId: 'UL4711',
+        presignedUrls: ['http://upload-chunk-to-this.url'],
+        partSizeBytes: 9999999999,
+      } as UploadProcessInfo)
+    ),
     uploadSequenceFileChunk: jasmine
       .createSpy('uploadSequenceFileChunk')
       .and.returnValue(lastValueFrom(of({ partNumber: 1, eTag: 'example-e-tag' } as ChunkUploadResponse))),
@@ -116,9 +127,17 @@ describe('Igs - Integration Tests', () => {
   };
 
   beforeEach(() =>
-    MockBuilder([IgsMeldungComponent, AppModule])
+    MockBuilder([IgsMeldungComponent, IgsMeldungService])
+      .keep(AsyncPipe)
+      .keep(MaxHeightContentContainerComponent)
+      .keep(TiledContentComponent)
+      .keep(CsvUploadComponent)
+      .keep(SequenceSelectionComponent)
+      .keep(UploadStatusComponent)
+      .keep(ResultComponent)
       .mock(LoggerModule)
-      .provide(IgsMeldungService)
+      .mock(NGXLogger)
+      .provide(provideStepNavigation())
       .provide(MockProvider(MeldungsdatenCsvFileUploadService, overrides.meldungsdatenCsvFileUploadService))
       .provide(MockProvider(DocumentReferenceService, overrides.documentReferenceService))
       .provide(MockProvider(SequenceUploadService, overrides.sequenceUploadService))
@@ -129,9 +148,11 @@ describe('Igs - Integration Tests', () => {
       .provide(provideHttpClientTesting())
   );
 
-  beforeEach(() => {
+  beforeEach(async () => {
     fixture = MockRender(IgsMeldungComponent);
     component = fixture.point.componentInstance;
+    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

@@ -17,6 +17,7 @@
 
 import { Injectable } from '@angular/core';
 import { assetUrl } from 'src/single-spa/asset-url';
+import { NgxLoggerConfig } from '@gematik/demis-portal-core-library';
 
 @Injectable({
   providedIn: 'root',
@@ -67,4 +68,5 @@ export interface MfIgsConfig {
 export interface EnvironmentConfig {
   mfIgs: MfIgsConfig;
   featureFlags?: FeatureFlags;
+  ngxLoggerConfig?: NgxLoggerConfig;
 }

@@ -17,7 +17,8 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
-import { AppModule } from '../app.module';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
+import { StepNavigation } from '@gematik/demis-portal-core-library';
 import { IgsMeldungService } from '../components/igs-meldung/igs-meldung.service';
 import { IgsNotificationComponent } from './igs-notification.component';
 import { CsvUploadComponent } from '../components/igs-meldung/csv-upload/csv-upload.component';
@@ -30,7 +31,7 @@ describe('IgsNotificationComponent', () => {
   let fixture: ComponentFixture<IgsNotificationComponent>;
   let igsMeldungService: IgsMeldungService;
 
-  beforeEach(() => MockBuilder([IgsNotificationComponent, AppModule]));
+  beforeEach(() => MockBuilder([IgsNotificationComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation));
 
   beforeEach(() => {
     fixture = MockRender(IgsNotificationComponent);

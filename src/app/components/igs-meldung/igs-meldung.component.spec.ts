@@ -18,11 +18,12 @@
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MockBuilder, MockedComponentFixture, MockRender, ngMocks } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
-import { AppModule } from 'src/app/app.module';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { IgsMeldungComponent } from './igs-meldung.component';
 import { IgsMeldungService } from './igs-meldung.service';
 import { ConfigService } from '../../config.service';
+import { StepNavigation } from '@gematik/demis-portal-core-library';
+import { AsyncPipe } from '@angular/common';
 
 describe('IgsMeldungComponent', () => {
   let fixture: MockedComponentFixture<IgsMeldungComponent, IgsMeldungComponent>;
@@ -30,9 +31,12 @@ describe('IgsMeldungComponent', () => {
   let configService: ConfigService;
 
   beforeEach(() =>
-    MockBuilder([IgsMeldungComponent, AppModule])
+    MockBuilder([IgsMeldungComponent])
       .mock(LoggerModule)
+      .mock(NGXLogger)
+      .mock(StepNavigation)
       .mock(ConfigService)
+      .keep(AsyncPipe)
       .provide(IgsMeldungService)
       .provide(provideHttpClient(withInterceptorsFromDi()))
       .provide(provideHttpClientTesting())

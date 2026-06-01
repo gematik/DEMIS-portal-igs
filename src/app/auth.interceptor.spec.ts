@@ -18,46 +18,46 @@
 import { HTTP_INTERCEPTORS, HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { MockBuilder, MockRender, NG_MOCKS_INTERCEPTORS } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
-import { AppModule } from './app.module';
+import { MockBuilder, MockRender, NG_MOCKS_INTERCEPTORS, ngMocks } from 'ng-mocks';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { AuthInterceptor } from './auth.interceptor';
 import { ConfigService } from './config.service';
 
 describe('AuthInterceptor', () => {
-  let configServiceMock;
+  const token = 'my-token';
+  const urls = {
+    igsServiceUrl: 'https://service.igs.org',
+    igsGatewayUrl: 'https://gateway.igs.org',
+  };
+
+  ngMocks.defaultMock(
+    ConfigService,
+    () =>
+      ({
+        get igsGatewayUrl() {
+          return urls.igsGatewayUrl;
+        },
+        get igsServiceUrl() {
+          return urls.igsServiceUrl;
+        },
+      }) as any
+  );
 
   beforeEach(async () => {
-    configServiceMock = {};
-    Object.defineProperty(configServiceMock, 'igsGatewayUrl', {
-      get: jasmine.createSpy('igsGatewayUrl').and.returnValue(urls.igsGatewayUrl),
-    });
-    Object.defineProperty(configServiceMock, 'igsServiceUrl', {
-      get: jasmine.createSpy('igsServiceUrl').and.returnValue(urls.igsServiceUrl),
-    });
-    await MockBuilder([AuthInterceptor, AppModule])
+    await MockBuilder([AuthInterceptor])
       .exclude(NG_MOCKS_INTERCEPTORS)
       .mock(LoggerModule)
-      .keep(HTTP_INTERCEPTORS)
+      .mock(NGXLogger)
+      .mock(ConfigService)
       .provide(provideHttpClient(withInterceptorsFromDi()))
       .provide(provideHttpClientTesting())
-      .provide({
-        provide: ConfigService,
-        useValue: configServiceMock,
-      });
+      .provide({ provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true });
   });
 
   afterEach(() => {
     delete (window as any)['token'];
     delete (window as any)['config'];
   });
-
-  const token = 'my-token';
-  // the following requests need a token
-  const urls = {
-    igsServiceUrl: 'https://service.igs.org',
-    igsGatewayUrl: 'https://gateway.igs.org',
-  };
 
   const urlTest = (url: string, tokenShouldBeThere: boolean = true) =>
     it(`should ${tokenShouldBeThere ? '' : 'NOT '}add an Authorization header to ${url}`, async () => {

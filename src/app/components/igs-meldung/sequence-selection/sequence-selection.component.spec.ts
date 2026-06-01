@@ -17,9 +17,10 @@
 
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
+import { StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
-import { AppModule } from 'src/app/app.module';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
+
 import { mockFileList } from 'src/test/shared-behaviour/mock-file-list.function';
 import { igsBatchFastqSequenzdateienSelectOverview } from '../igs-batch-fastq.testdata';
 import { IgsMeldungService } from '../igs-meldung.service';
@@ -31,7 +32,7 @@ describe('SequenceSelectionComponent', () => {
   let component: SequenceSelectionComponent;
   let igsMeldungService: IgsMeldungService;
 
-  beforeEach(() => MockBuilder([SequenceSelectionComponent, AppModule]).mock(LoggerModule));
+  beforeEach(() => MockBuilder([SequenceSelectionComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation));
 
   beforeEach(() => {
     fixture = MockRender(SequenceSelectionComponent);
@@ -109,15 +110,12 @@ describe('SequenceSelectionComponent', () => {
       expect(stepNavigationService.next).toHaveBeenCalled();
     });
 
-    it('should call stepNavigationService.reset() in backToWelcome', () => {
-      const stepNavigationService = { reset: jasmine.createSpy('reset') };
-      (component as any).stepNavigationService = stepNavigationService;
-      const backToWelcomeSpy = spyOn(igsMeldungService, 'backToWelcome').and.callFake((callback: any) => callback());
+    it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
+      const backToWelcomeSpy = spyOn(igsMeldungService, 'backToWelcome');
 
       component.backToWelcome();
 
       expect(backToWelcomeSpy).toHaveBeenCalled();
-      expect(stepNavigationService.reset).toHaveBeenCalled();
     });
   });
 });

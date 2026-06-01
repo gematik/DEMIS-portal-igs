@@ -1,4 +1,4 @@
-<gem-demis-section-header titleText="Sequenzdateien auswählen">
+<gem-demis-section-header id="demis-igs-choose-sequence-files-page-header" titleText="Sequenzdateien auswählen">
   <p>
     Wählen Sie bitte nachfolgend die den Metadaten zugehörigen Sequenzdateien aus.
     Die Dateien werden über den Dateinamen den korrekten Metadaten zugeordnet und
@@ -23,20 +23,20 @@
 </ng-template>
 <!-- /REUSABLE FILE ICON TEMPLATES -->
 
-<gem-demis-section-header titleText="Sequenzdateien hochladen" [level]="2">
+<gem-demis-section-header id="demis-igs-upload-sequence-files-section-header" titleText="Sequenzdateien hochladen" [level]="2">
   <p>Bitte stellen Sie die zugehörigen Sequenzen bereit.</p>
 </gem-demis-section-header>
 
-<gem-demis-file-select displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
+<gem-demis-file-select id="demis-igs-sequence-files-file-select" displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
   (onFileSelected)="onFilesSelected($event)" [multipleFilesSelectable]="true"></gem-demis-file-select>
 
 
-<gem-demis-section-header titleText="Übersicht der erforderlichen Sequenzen" [level]="2">
+<gem-demis-section-header id="demis-igs-sequence-files-overview-section-header" titleText="Übersicht der erforderlichen Sequenzen" [level]="2">
   <p>Hier sehen Sie welche Sequenzen bereits korrekt zugeordnet wurden.</p>
 </gem-demis-section-header>
 
 
-<mat-table [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2">
+<mat-table id="demis-igs-sequence-files-table" [dataSource]="toDataSource(overviewData)" class="mat-elevation-z2">
   <!-- DATE_OF_SEQUENCING Definition -->
   <ng-container matColumnDef="dateOfSequencing">
     <mat-header-cell *matHeaderCellDef> Sequenzier-datum </mat-header-cell>
@@ -86,12 +86,12 @@
   </ng-container>
 
   <!-- Header and Row Declarations -->
-  <mat-header-row *matHeaderRowDef="['dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']; sticky: true"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: ['dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']"></mat-row>
+  <mat-header-row id="demis-igs-sequence-files-header-row" *matHeaderRowDef="['dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']; sticky: true"></mat-header-row>
+  <mat-row id="demis-igs-sequence-files-row-{{ index }}" *matRowDef="let row; let index = index; columns: ['dateOfSequencing', 'demisNotificationId', 'labSequenceId', 'fileOneName', 'fileTwoName']"></mat-row>
 </mat-table>
 }
 @else {
-<gem-demis-section-header titleText="Keine Daten vorhanden" [level]="2">
+<gem-demis-section-header id="demis-igs-no-data-section-header" titleText="Keine Daten vorhanden" [level]="2">
   <p>Es sind keine geparsten Metadaten von IGS-Meldungen vorhanden.</p>
 </gem-demis-section-header>
 }

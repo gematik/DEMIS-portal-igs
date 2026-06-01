@@ -16,27 +16,31 @@
  */
 
 import { Component, computed, inject } from '@angular/core';
-import { createStepContent } from '@gematik/demis-portal-core-library';
+import { createStepContent, MaxHeightContentContainerComponent, SideNavigationComponent } from '@gematik/demis-portal-core-library';
 import { CsvUploadComponent } from '../components/igs-meldung/csv-upload/csv-upload.component';
 import { IgsMeldungService } from '../components/igs-meldung/igs-meldung.service';
 import { ResultComponent } from '../components/igs-meldung/result/result.component';
 import { SequenceSelectionComponent } from '../components/igs-meldung/sequence-selection/sequence-selection.component';
 import { UploadStatusComponent } from '../components/igs-meldung/upload-status/upload-status.component';
 import { ConfigService } from '../config.service';
+import { NgClass } from '@angular/common';
 
 /**
  * Container component for the IGS notification process using the new SideNavigationComponent.
  * This component manages the multi-step process for genomic surveillance notification.
+ *
+ * Provides StepNavigation (via provideStepNavigation) so that both this host component and the step content
+ * components can control the navigation flow.
  */
 @Component({
   selector: 'np-mf-igs-notification',
   templateUrl: './igs-notification.component.html',
-  standalone: false,
   styles: `
     :host ::ng-deep .hide-accessibility-link .footer-link[href='#accessibility-statement'] {
       display: none;
     }
   `,
+  imports: [MaxHeightContentContainerComponent, SideNavigationComponent, NgClass],
 })
 export class IgsNotificationComponent {
   protected readonly igsMeldungService = inject(IgsMeldungService);

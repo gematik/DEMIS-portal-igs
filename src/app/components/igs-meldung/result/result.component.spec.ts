@@ -18,16 +18,17 @@
 import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MessageDialogService, StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder, MockedComponentFixture, MockRender, ngMocks } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { BehaviorSubject } from 'rxjs';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
-import { AppModule } from 'src/app/app.module';
-import { IgsLocalStorageKeys, IgsMeldungService, UploadError, IGS_PROCESS_STEPS } from 'src/app/components/igs-meldung/igs-meldung.service';
+import { NgTemplateOutlet } from '@angular/common';
+
+import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from 'src/app/components/igs-meldung/igs-meldung.service';
+import { ConfigService } from 'src/app/config.service';
 import { IgsMeldung } from '../igs-meldung.types';
 import { ResultComponent } from './result.component';
-import { ConfigService } from 'src/app/config.service';
 
 declare type IndexAccessible = Record<string, unknown>;
 
@@ -69,7 +70,15 @@ describe('ResultComponent', () => {
 
   let igsMeldungService: IgsMeldungService;
 
-  beforeEach(() => MockBuilder([ResultComponent, AppModule]).mock(LoggerModule).mock(MessageDialogService).mock(ExportToFileService));
+  beforeEach(() =>
+    MockBuilder([ResultComponent, IgsMeldungService])
+      .mock(LoggerModule)
+      .mock(NGXLogger)
+      .mock(MessageDialogService)
+      .mock(ExportToFileService)
+      .mock(StepNavigation)
+      .keep(NgTemplateOutlet)
+  );
 
   beforeEach(() => {
     // Set localStorage for upload errors before initializing the service
@@ -199,18 +208,12 @@ describe('ResultComponent', () => {
       expect(igsMeldungService.processSteps[2].control.disabled).toBe(true);
     });
 
-    it('should call stepNavigationService.reset() in backToWelcome callback', () => {
-      const mockStepNavigationService = { reset: jasmine.createSpy('reset') };
-      (component as any).stepNavigationService = mockStepNavigationService;
+    it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
+      const backToWelcomeSpy = spyOn(igsMeldungService, 'backToWelcome');
 
       component.backToWelcome();
 
-      expect(mockStepNavigationService.reset).toHaveBeenCalled();
-      // Verify that processSteps are properly reset
-      expect(igsMeldungService.processSteps[0].control.disabled).toBe(false);
-      expect(igsMeldungService.processSteps[1].control.disabled).toBe(true);
-      expect(igsMeldungService.processSteps[2].control.disabled).toBe(true);
-      expect(igsMeldungService.processSteps[3].control.disabled).toBe(true);
+      expect(backToWelcomeSpy).toHaveBeenCalled();
     });
   });
 });

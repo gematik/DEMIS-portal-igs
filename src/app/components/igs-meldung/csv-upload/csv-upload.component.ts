@@ -16,18 +16,41 @@
  */
 
 import { Component, inject, OnDestroy } from '@angular/core';
-import { ErrorMessage, MessageDialogService, StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
+import {
+  ErrorMessage,
+  MessageDialogService,
+  StepContentComponent,
+  StepNavigation,
+  SectionHeaderComponent,
+  FileNameChipComponent,
+  ActionsBarComponent,
+  FileSelectComponent,
+  SecondaryButtonDirective,
+} from '@gematik/demis-portal-core-library';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
 import { ConfigService } from '../../../config.service';
+import { MatButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { NgTemplateOutlet, AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'np-mf-igs-csv-upload',
   templateUrl: './csv-upload.component.html',
   styleUrl: './csv-upload.component.scss',
-  standalone: false,
+  imports: [
+    SectionHeaderComponent,
+    FileNameChipComponent,
+    MatButton,
+    MatProgressSpinner,
+    ActionsBarComponent,
+    NgTemplateOutlet,
+    FileSelectComponent,
+    SecondaryButtonDirective,
+    AsyncPipe,
+  ],
 })
 export class CsvUploadComponent extends StepContentComponent<void> implements OnDestroy {
   readonly uploading$ = new BehaviorSubject<boolean>(false);
@@ -36,8 +59,7 @@ export class CsvUploadComponent extends StepContentComponent<void> implements On
   private readonly unsubscriber = new Subject<void>();
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly configService = inject(ConfigService);
-  // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-  private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+  private readonly stepNavigationService = inject(StepNavigation);
 
   get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
     return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
@@ -72,7 +94,7 @@ export class CsvUploadComponent extends StepContentComponent<void> implements On
             this.uploading$.next(false);
             this.igsMeldungSrv.proceed();
             if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-              this.stepNavigationService?.next();
+              this.stepNavigationService.next();
             }
           }
         },
@@ -108,9 +130,7 @@ export class CsvUploadComponent extends StepContentComponent<void> implements On
       this.igsMeldungSrv.processSteps.forEach(step => {
         step.control.enable();
       });
-      for (let i = 0; i < 3; i++) {
-        this.stepNavigationService?.next();
-      }
+      this.stepNavigationService.goToStepByKey('result');
       this.igsMeldungSrv.processSteps.forEach(step => {
         if (step.key !== 'result') {
           step.control.disable();
