@@ -1,4 +1,4 @@
-<gem-demis-section-header titleText="Metadaten bereitstellen">
+<gem-demis-section-header id="demis-igs-provide-metadata-page-header"  titleText="Metadaten bereitstellen">
   <p>
     Stellen Sie die Metadaten in tabellarischer Form als CSV zur Verfügung.
     Jede Zeile in der Datei entspricht einer Meldung.
@@ -8,11 +8,12 @@
 </gem-demis-section-header>
 
 @if (igsMeldungSrv.csvFile$ | async; as csvFile) {
-  <gem-demis-section-header titleText="Metadaten hochladen" [level]="2">
+  <gem-demis-section-header id="demis-igs-metadata-selected-section-header" titleText="Metadaten hochladen" [level]="2">
     <p>Sie haben folgende Datei ausgewählt:</p>
   </gem-demis-section-header>
 
   <gem-demis-file-name-chip
+    id="demis-igs-selected-metadata-file-display"
     [fileName]="csvFile.name"
     [fileSize]="csvFile.size"
     (fileDeleted)="onFileDeleted()"
@@ -45,11 +46,11 @@
   }
 }
 @else {
-  <gem-demis-section-header titleText="Metadaten hochladen" [level]="2">
+  <gem-demis-section-header id="demis-igs-upload-metadata-section-header" titleText="Metadaten hochladen" [level]="2">
     <p>Bitte laden Sie hier die CSV-Datei hoch.</p>
   </gem-demis-section-header>
 
-  <gem-demis-file-select displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
+  <gem-demis-file-select id="demis-igs-upload-metadata-file-select" displayText="Ziehen Sie eine Datei hierhin, oder klicken Sie zum Auswählen."
     (onFileSelected)="onFilesSelected($event)" acceptedFileTypes="text/csv"></gem-demis-file-select>
 
     <ng-template #showLastResultsBtn>
@@ -61,7 +62,7 @@
     </ng-template>
     
     <ng-template #dummyUploadBtn>
-      <button type="button" mat-flat-button color="primary" [disabled]="true">
+      <button id="demis-igs-dummy-upload-btn" type="button" mat-flat-button color="primary" [disabled]="true">
         Datei verwenden
       </button>
     </ng-template>

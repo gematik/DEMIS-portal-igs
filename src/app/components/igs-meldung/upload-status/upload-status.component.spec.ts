@@ -18,11 +18,11 @@
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
-import { AppModule } from 'src/app/app.module';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
+
 import { igsBatchFastqSequenzdateienSelectOverview } from '../igs-batch-fastq.testdata';
 import { UploadStatusComponent } from './upload-status.component';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MessageDialogService, StepNavigation } from '@gematik/demis-portal-core-library';
 import { UploadError, IgsMeldungService } from '../igs-meldung.service';
 import { ConfigService } from 'src/app/config.service';
 
@@ -30,7 +30,7 @@ describe('UploadStatus', () => {
   let fixture: MockedComponentFixture<UploadStatusComponent, UploadStatusComponent>;
   let component: UploadStatusComponent;
 
-  beforeEach(() => MockBuilder([UploadStatusComponent, AppModule]).mock(LoggerModule));
+  beforeEach(() => MockBuilder([UploadStatusComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation));
 
   beforeEach(() => {
     fixture = MockRender(UploadStatusComponent);

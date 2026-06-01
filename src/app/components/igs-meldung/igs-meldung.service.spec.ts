@@ -16,14 +16,14 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { FileSizePipe, MessageDialogService, Step } from '@gematik/demis-portal-core-library';
+import { FileSizePipe, MessageDialogService, Step, StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, firstValueFrom, of, throwError } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
 import { MeldungSubmitResponse, MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { ChunkUploadResponse, SequenceUploadService, UploadProcessInfo } from 'src/api/services/sequence-upload.service';
-import { AppModule } from 'src/app/app.module';
+
 import { UploadProgress } from 'src/shared/shared-functions';
 import { mockFileList, mockFileListWithBytes } from 'src/test/shared-behaviour/mock-file-list.function';
 import { igsBatchFastqSequenzdateienSelectOverview, igsBatchFastqTestdata, uploadProcessInfo, uploadSequenceFileParams } from './igs-batch-fastq.testdata';
@@ -72,7 +72,15 @@ const exampleOpperationOutcomeString = JSON.stringify(
 describe('IgsMeldungService', () => {
   let service: IgsMeldungService;
 
-  beforeEach(() => MockBuilder([IgsMeldungService, AppModule]).mock(LoggerModule).mock(FileSizePipe).mock(MessageDialogService).mock(SequenceUploadService));
+  beforeEach(() =>
+    MockBuilder([IgsMeldungService])
+      .mock(LoggerModule)
+      .mock(NGXLogger)
+      .mock(FileSizePipe)
+      .mock(MessageDialogService)
+      .mock(SequenceUploadService)
+      .mock(StepNavigation)
+  );
 
   beforeEach(() => {
     service = TestBed.inject(IgsMeldungService);
@@ -176,6 +184,11 @@ describe('IgsMeldungService', () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     const fileList = mockFileList([igsBatchFastqTestdata.items[0].data.fileOneName, igsBatchFastqTestdata.items[0].data.fileTwoName]);
     service.attachFiles(fileList);
+
+    const stepNavigation = TestBed.inject(StepNavigation);
+    if (!stepNavigation.reset) {
+      stepNavigation.reset = jasmine.createSpy('reset');
+    }
 
     // Call the reset method
     service.backToWelcome();

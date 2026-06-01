@@ -124,3 +124,6 @@ config:
     FEATURE_FLAG_PORTAL_IGS_SIDENAV: false
     FEATURE_FLAG_PORTAL_ACCESSIBILITY: false
     FEATURE_FLAG_FOOTER_LINKS_CORRECTION: false
+  ngxLoggerConfig:
+    level: 1,
+    disableConsoleLogging: true

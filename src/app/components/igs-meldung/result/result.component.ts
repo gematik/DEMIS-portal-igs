@@ -17,19 +17,61 @@
 
 import { Component, inject, OnInit } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
-import { MessageDialogService, StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
+import {
+  MessageDialogService,
+  StepContentComponent,
+  StepNavigation,
+  SectionHeaderComponent,
+  SecondaryButtonDirective,
+  ActionsBarComponent,
+} from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
 import { ConfigService } from '../../../config.service';
 import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
+import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { NgTemplateOutlet, AsyncPipe, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'np-mf-igs-result',
   templateUrl: './result.component.html',
   styleUrl: './result.component.scss',
-  standalone: false,
+  imports: [
+    MatIconButton,
+    MatIcon,
+    SectionHeaderComponent,
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    NgTemplateOutlet,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatButton,
+    SecondaryButtonDirective,
+    ActionsBarComponent,
+    AsyncPipe,
+    DatePipe,
+  ],
 })
 export class ResultComponent extends StepContentComponent<void> implements OnInit {
   readonly igsMeldungService = inject(IgsMeldungService);
@@ -37,8 +79,7 @@ export class ResultComponent extends StepContentComponent<void> implements OnIni
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly exportToFileService = inject(ExportToFileService);
   private readonly configService = inject(ConfigService);
-  // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-  private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+  private readonly stepNavigationService = inject(StepNavigation);
 
   get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
     return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
@@ -120,6 +161,6 @@ export class ResultComponent extends StepContentComponent<void> implements OnIni
   }
 
   backToWelcome() {
-    this.igsMeldungService.backToWelcome(() => this.stepNavigationService?.reset());
+    this.igsMeldungService.backToWelcome();
   }
 }

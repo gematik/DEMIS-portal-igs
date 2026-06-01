@@ -16,24 +16,65 @@
  */
 
 import { Component, inject, OnInit } from '@angular/core';
-import { MatTableDataSource } from '@angular/material/table';
+import {
+  MatTableDataSource,
+  MatTable,
+  MatColumnDef,
+  MatHeaderCellDef,
+  MatHeaderCell,
+  MatCellDef,
+  MatCell,
+  MatHeaderRowDef,
+  MatHeaderRow,
+  MatRowDef,
+  MatRow,
+} from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { StepContentComponent, StepNavigationService } from '@gematik/demis-portal-core-library';
+import {
+  StepContentComponent,
+  StepNavigation,
+  SectionHeaderComponent,
+  FileSelectComponent,
+  SecondaryButtonDirective,
+  ActionsBarComponent,
+} from '@gematik/demis-portal-core-library';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
 import { ConfigService } from '../../../config.service';
+import { MatIcon } from '@angular/material/icon';
+import { NgTemplateOutlet, AsyncPipe, DatePipe } from '@angular/common';
+import { MatButton } from '@angular/material/button';
 
 @Component({
   selector: 'np-mf-igs-sequence-selection',
   templateUrl: './sequence-selection.component.html',
   styleUrl: './sequence-selection.component.scss',
-  standalone: false,
+  imports: [
+    SectionHeaderComponent,
+    MatIcon,
+    FileSelectComponent,
+    MatTable,
+    MatColumnDef,
+    MatHeaderCellDef,
+    MatHeaderCell,
+    MatCellDef,
+    MatCell,
+    NgTemplateOutlet,
+    MatHeaderRowDef,
+    MatHeaderRow,
+    MatRowDef,
+    MatRow,
+    MatButton,
+    SecondaryButtonDirective,
+    ActionsBarComponent,
+    AsyncPipe,
+    DatePipe,
+  ],
 })
 export class SequenceSelectionComponent extends StepContentComponent<void> implements OnInit {
   igsMeldungService = inject(IgsMeldungService);
   private readonly configService = inject(ConfigService);
-  // remove optional when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-  private readonly stepNavigationService = inject(StepNavigationService, { optional: true });
+  private readonly stepNavigationService = inject(StepNavigation);
 
   get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
     return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
@@ -58,11 +99,11 @@ export class SequenceSelectionComponent extends StepContentComponent<void> imple
   proceed() {
     this.igsMeldungService.proceed();
     if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.stepNavigationService?.next();
+      this.stepNavigationService.next();
     }
   }
 
   backToWelcome() {
-    this.igsMeldungService.backToWelcome(() => this.stepNavigationService?.reset());
+    this.igsMeldungService.backToWelcome();
   }
 }

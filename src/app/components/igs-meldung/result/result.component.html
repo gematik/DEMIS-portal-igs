@@ -30,13 +30,13 @@
   </ng-template>
   <!-- /REUSABLE ICON TEMPLATES -->
 
-  <gem-demis-section-header titleText="Ergebnis" [level]="1">
+  <gem-demis-section-header id="demis-igs-result-page-header" titleText="Ergebnis" [level]="1">
     <p>Folgende Meldungen wurden übermittelt:</p>
   </gem-demis-section-header>
 
   <br /><br />
 
-  <mat-table [dataSource]="toDataSource(results)" class="mat-elevation-z2" [id]="'results-table'">
+  <mat-table [dataSource]="toDataSource(results)" class="mat-elevation-z2" id="results-table">
     <!-- notification Definition -->
     <ng-container matColumnDef="notification">
       <mat-header-cell *matHeaderCellDef> Meldung übermittelt</mat-header-cell>
@@ -85,13 +85,13 @@
 
 
     <!-- Header and Row Declarations -->
-    <mat-header-row
+    <mat-header-row id="demis-igs-result-header-row"
       *matHeaderRowDef="['notification', 'uploadTimestamp', 'demisNotificationId', 'labSequenceId', 'demisSequenceId']; sticky: true"></mat-header-row>
-    <mat-row
-      *matRowDef="let row; columns: ['notification', 'uploadTimestamp', 'demisNotificationId', 'labSequenceId', 'demisSequenceId']"></mat-row>
+    <mat-row id="demis-igs-result-row-{{ index }}"
+      *matRowDef="let row; let index = index; columns: ['notification', 'uploadTimestamp', 'demisNotificationId', 'labSequenceId', 'demisSequenceId']"></mat-row>
   </mat-table>
 } @else {
-  <gem-demis-section-header titleText="Keine Daten vorhanden" [level]="2">
+  <gem-demis-section-header id="demis-igs-no-data-section-header" titleText="Keine Daten vorhanden" [level]="2">
     <p>Es sind keine Ergebnisdaten von IGS-Meldungen vorhanden.</p>
   </gem-demis-section-header>
 }

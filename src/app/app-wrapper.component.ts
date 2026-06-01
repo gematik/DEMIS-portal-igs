@@ -17,6 +17,8 @@
 
 import { Component, inject } from '@angular/core';
 import { ConfigService } from './config.service';
+import { IgsNotificationComponent } from './igs-notification/igs-notification.component';
+import { IgsMeldungComponent } from './components/igs-meldung/igs-meldung.component';
 
 /**
  * Temporary workaround!
@@ -33,7 +35,7 @@ import { ConfigService } from './config.service';
       <np-mf-igs-igs-meldung></np-mf-igs-igs-meldung>
     }
   `,
-  standalone: false,
+  imports: [IgsNotificationComponent, IgsMeldungComponent],
 })
 export class AppWrapperComponent {
   readonly configService = inject(ConfigService);

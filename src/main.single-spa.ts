@@ -15,23 +15,86 @@
     find details in the "Readme" file.
  */
 
-import { NgZone, provideZoneChangeDetection } from '@angular/core';
-
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { NgZone, isDevMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
-import { AppModule } from './app/app.module';
-import { singleSpaAngular, getSingleSpaExtraProviders } from 'single-spa-angular';
+
+import { getSingleSpaExtraProviders, singleSpaAngular } from 'single-spa-angular';
 import { singleSpaPropsSubject } from './single-spa/single-spa-props';
 import { AppProps } from 'single-spa';
 import { setPublicPath } from 'systemjs-webpack-interop';
+import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
+import { ConfigService } from './app/config.service';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { AuthInterceptor } from './app/auth.interceptor';
+import { MeldungsdatenCsvFileUploadService } from './api/services/meldungsdaten-csv-file-upload.service';
+import { SequenceUploadService } from './api/services/sequence-upload.service';
+import { MeldungSubmitService } from './api/services/meldung-submit.service';
+import { DocumentReferenceService } from './api/services/document-reference.service';
+import { IgsMeldungService } from './app/components/igs-meldung/igs-meldung.service';
+import { FhirValidationResponseService } from './api/services/fhir-validation-response.service';
+import { provideStepNavigation, FileSizePipe, SecondaryButtonDirective } from '@gematik/demis-portal-core-library';
+import { AppRoutingModule } from './app/app-routing.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatStepperModule } from '@angular/material/stepper';
+import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatDialogModule } from '@angular/material/dialog';
+import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { AppComponent } from './app/app.component';
 
 const appId = 'notification-portal-mf-igs';
 
 const lifecycles = singleSpaAngular({
   bootstrapFunction: singleSpaProps => {
     singleSpaPropsSubject.next(singleSpaProps);
-    return platformBrowserDynamic(getSingleSpaExtraProviders()).bootstrapModule(AppModule, {
-      applicationProviders: [provideZoneChangeDetection()],
+    return bootstrapApplication(AppComponent, {
+      providers: [
+        getSingleSpaExtraProviders(),
+        provideZoneChangeDetection(),
+        importProvidersFrom(
+          BrowserModule,
+          AppRoutingModule,
+          BrowserAnimationsModule,
+          MatSidenavModule,
+          MatStepperModule,
+          MatCardModule,
+          MatButtonModule,
+          MatIconModule,
+          MatChipsModule,
+          MatDividerModule,
+          MatProgressSpinnerModule,
+          MatTableModule,
+          MatPaginatorModule,
+          MatDialogModule,
+          LoggerModule.forRoot({
+            level: isDevMode() ? NgxLoggerLevel.DEBUG : NgxLoggerLevel.ERROR,
+            serverLogLevel: NgxLoggerLevel.OFF,
+          }),
+          FileSizePipe,
+          SecondaryButtonDirective
+        ),
+        ConfigService,
+        {
+          provide: HTTP_INTERCEPTORS,
+          useClass: AuthInterceptor,
+          multi: true,
+        },
+        MeldungsdatenCsvFileUploadService,
+        SequenceUploadService,
+        MeldungSubmitService,
+        DocumentReferenceService,
+        provideHttpClient(withInterceptorsFromDi()),
+        IgsMeldungService,
+        FhirValidationResponseService,
+        provideStepNavigation(),
+      ],
     });
   },
   template: '<app-surveillance-root />',

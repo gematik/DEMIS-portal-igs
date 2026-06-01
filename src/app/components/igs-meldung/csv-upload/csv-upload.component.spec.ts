@@ -16,12 +16,11 @@
  */
 
 import { By } from '@angular/platform-browser';
-import { MessageDialogService } from '@gematik/demis-portal-core-library';
+import { MessageDialogService, StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { of, throwError } from 'rxjs';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
-import { AppModule } from 'src/app/app.module';
 import { toFileUploadInfo, UploadProgress } from 'src/shared/shared-functions';
 import { mockFileList } from 'src/test/shared-behaviour/mock-file-list.function';
 import { fromSimulatedUploadProgess, toSimulatedUpload } from 'src/test/utility/utility-functions';
@@ -36,7 +35,13 @@ describe('CsvUploadComponent', () => {
   let component: CsvUploadComponent;
 
   beforeEach(() =>
-    MockBuilder([CsvUploadComponent, AppModule]).mock(IgsMeldungService).mock(MeldungsdatenCsvFileUploadService).mock(MessageDialogService).mock(LoggerModule)
+    MockBuilder([CsvUploadComponent])
+      .mock(IgsMeldungService)
+      .mock(MeldungsdatenCsvFileUploadService)
+      .mock(MessageDialogService)
+      .mock(LoggerModule)
+      .mock(NGXLogger)
+      .mock(StepNavigation)
   );
 
   beforeEach(() => {
@@ -199,8 +204,8 @@ describe('CsvUploadComponent', () => {
       expect(stepNavigationService.next).not.toHaveBeenCalled();
     });
 
-    it('should call stepNavigationService.next() three times when navigating to last results', () => {
-      const stepNavigationService = { next: jasmine.createSpy('next') };
+    it('should call stepNavigationService.goToStepByKey() when navigating to last results', () => {
+      const stepNavigationService = { goToStepByKey: jasmine.createSpy('goToStepByKey') };
       (component as any).stepNavigationService = stepNavigationService;
 
       // Mock processSteps since IgsMeldungService is mocked
@@ -219,11 +224,11 @@ describe('CsvUploadComponent', () => {
 
       component.navigateToLastResults();
 
-      expect(stepNavigationService.next).toHaveBeenCalledTimes(3);
+      expect(stepNavigationService.goToStepByKey).toHaveBeenCalledWith('result');
     });
 
     it('should enable and then selectively disable processSteps when navigating to last results', () => {
-      const stepNavigationService = { next: jasmine.createSpy('next') };
+      const stepNavigationService = { goToStepByKey: jasmine.createSpy('goToStepByKey') };
       (component as any).stepNavigationService = stepNavigationService;
 
       // Mock processSteps
@@ -257,7 +262,7 @@ describe('CsvUploadComponent', () => {
     });
 
     it('should not disable the result step when navigating to last results', () => {
-      const stepNavigationService = { next: jasmine.createSpy('next') };
+      const stepNavigationService = { goToStepByKey: jasmine.createSpy('goToStepByKey') };
       (component as any).stepNavigationService = stepNavigationService;
 
       // Mock processSteps

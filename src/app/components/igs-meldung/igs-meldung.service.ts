@@ -18,7 +18,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { ErrorMessage, FileSizePipe, MessageDialogService, ProcessStep, Step } from '@gematik/demis-portal-core-library';
+import { ErrorMessage, FileSizePipe, MessageDialogService, ProcessStep, Step, StepNavigation } from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, lastValueFrom, map, Subject } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
@@ -55,55 +55,52 @@ export type UploadError = {
 };
 
 /**
- * ProcessSteps with FormControls for the new SideNavigationComponent
+ * Creates fresh ProcessStep instances with new FormControls.
+ * Called per service instance to avoid sharing mutable state across
+ * microfrontend mount/unmount cycles (SystemJS module cache persists).
  */
-export const IGS_PROCESS_STEPS: ProcessStep[] = [
-  {
-    key: 'csv-upload',
-    label: 'Metadaten bereitstellen',
-    description: 'Bereitstellung der Metadaten in tabellarischer Form',
-    control: new FormControl<boolean | null>({ value: null, disabled: false }, [Validators.required]),
-  },
-  {
-    key: 'sequence-selection',
-    label: 'Sequenzdateien auswählen',
-    description: 'Bereitstellung der zugehörigen Sequenzdateien',
-    control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
-  },
-  {
-    key: 'upload-status',
-    label: 'Status des Uploads',
-    description: 'Hochladen der Sequenzdateien und Übermittlung an das RKI',
-    control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
-  },
-  {
-    key: 'result',
-    label: 'Ergebnis',
-    description: 'Zusammenfassung der Übermittlungen',
-    control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
-  },
-];
+function createProcessSteps(): ProcessStep[] {
+  return [
+    {
+      key: 'csv-upload',
+      label: 'Metadaten bereitstellen',
+      description: 'Bereitstellung der Metadaten in tabellarischer Form',
+      control: new FormControl<boolean | null>({ value: null, disabled: false }, [Validators.required]),
+    },
+    {
+      key: 'sequence-selection',
+      label: 'Sequenzdateien auswählen',
+      description: 'Bereitstellung der zugehörigen Sequenzdateien',
+      control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
+    },
+    {
+      key: 'upload-status',
+      label: 'Status des Uploads',
+      description: 'Hochladen der Sequenzdateien und Übermittlung an das RKI',
+      control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
+    },
+    {
+      key: 'result',
+      label: 'Ergebnis',
+      description: 'Zusammenfassung der Übermittlungen',
+      control: new FormControl<boolean | null>({ value: null, disabled: true }, [Validators.required]),
+    },
+  ];
+}
 
-// remove this constant when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-const IGS_STEPS: Step[] = IGS_PROCESS_STEPS.map(
-  (step, index) =>
-    ({
-      number: index + 1,
-      title: step.label,
-      description: step.description,
-    }) as Step
-);
-
-const IGS_INITIAL_STATE = {
-  csvFile: null,
-  activeStep: IGS_STEPS[0],
-  overviewData: null,
-  attachedFiles: [],
-  fileUploads: [],
-  notificationUploads: [],
-  uploadErrors: [],
-  uploadCanceled: true,
-};
+/**
+ * Derives legacy Step[] from ProcessStep[] for the deprecated stepper.
+ */
+function deriveSteps(processSteps: ProcessStep[]): Step[] {
+  return processSteps.map(
+    (step, index) =>
+      ({
+        number: index + 1,
+        title: step.label,
+        description: step.description,
+      }) as Step
+  );
+}
 
 export const SEARCH_STRINGS = {
   profileValidation: 'Validierungsfehler Metadaten-Upload IGS',
@@ -124,13 +121,19 @@ const getSearchString = (type: string): string => {
 
 @Injectable()
 export class IgsMeldungService {
-  private readonly csvFileSub$ = new BehaviorSubject<File | null>(IGS_INITIAL_STATE.csvFile);
-  private readonly activeStepSub$ = new BehaviorSubject<Step>(IGS_INITIAL_STATE.activeStep);
-  private readonly overviewDataSub$ = new BehaviorSubject<IgsMeldung.OverviewResponse | null>(IGS_INITIAL_STATE.overviewData);
-  private readonly attachedFilesSub$ = new BehaviorSubject<File[]>(IGS_INITIAL_STATE.attachedFiles);
-  private readonly fileUploadsSub$ = new BehaviorSubject<IgsMeldung.FileUploadInfo[]>(IGS_INITIAL_STATE.fileUploads);
-  private readonly notificationUploadsSub$ = new BehaviorSubject<IgsMeldung.NotificationUploadInfo[]>(IGS_INITIAL_STATE.notificationUploads);
-  private readonly uploadCanceled$ = new BehaviorSubject<boolean>(IGS_INITIAL_STATE.uploadCanceled);
+  /** Fresh ProcessStep instances with own FormControls, created per service instance. */
+  readonly processSteps: ProcessStep[] = createProcessSteps();
+
+  // remove this property when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
+  readonly steps: Step[] = deriveSteps(this.processSteps);
+
+  private readonly csvFileSub$ = new BehaviorSubject<File | null>(null);
+  private readonly activeStepSub$ = new BehaviorSubject<Step>(this.steps[0]);
+  private readonly overviewDataSub$ = new BehaviorSubject<IgsMeldung.OverviewResponse | null>(null);
+  private readonly attachedFilesSub$ = new BehaviorSubject<File[]>([]);
+  private readonly fileUploadsSub$ = new BehaviorSubject<IgsMeldung.FileUploadInfo[]>([]);
+  private readonly notificationUploadsSub$ = new BehaviorSubject<IgsMeldung.NotificationUploadInfo[]>([]);
+  private readonly uploadCanceled$ = new BehaviorSubject<boolean>(true);
   private readonly uploadCanceledSubject = new Subject<boolean>();
   private readonly lastBatchUploadFinishedAt_Trigger: WritableSignal<Date | undefined> = signal(undefined);
 
@@ -170,32 +173,24 @@ export class IgsMeldungService {
   private readonly meldungSubmitService = inject(MeldungSubmitService);
   private readonly fhirValidationResponseService = inject(FhirValidationResponseService);
   private readonly configService = inject(ConfigService);
-
-  // remove this getter when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-  get steps() {
-    return IGS_STEPS;
-  }
-
-  get processSteps() {
-    return IGS_PROCESS_STEPS;
-  }
+  private readonly stepNavigationService = inject(StepNavigation);
 
   proceed() {
-    const currentStepIndex = IGS_STEPS.indexOf(this.activeStepSub$.value);
-    if (currentStepIndex < IGS_STEPS.length - 1 && this.canProceed()) {
+    const currentStepIndex = this.steps.indexOf(this.activeStepSub$.value);
+    if (currentStepIndex < this.steps.length - 1 && this.canProceed()) {
       if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
         // Mark current step as valid
-        IGS_PROCESS_STEPS[currentStepIndex].control.setValue(true);
-        IGS_PROCESS_STEPS[currentStepIndex].control.markAsTouched();
-        IGS_PROCESS_STEPS[currentStepIndex].control.updateValueAndValidity();
+        this.processSteps[currentStepIndex].control.setValue(true);
+        this.processSteps[currentStepIndex].control.markAsTouched();
+        this.processSteps[currentStepIndex].control.updateValueAndValidity();
       }
 
       // Activate next step
       const nextStepIndex = currentStepIndex + 1;
-      this.activeStepSub$.next(IGS_STEPS[nextStepIndex]);
+      this.activeStepSub$.next(this.steps[nextStepIndex]);
       if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
         // Because of the linear mode, enable the next step's control
-        IGS_PROCESS_STEPS[nextStepIndex].control.enable();
+        this.processSteps[nextStepIndex].control.enable();
       }
     }
   }
@@ -203,7 +198,7 @@ export class IgsMeldungService {
   proceedToResultStep() {
     this.initializeNotificationUploadInfoFromLocalStorage();
     this.initializeUploadErrorsFromLocalStorage();
-    this.activeStepSub$.next(IGS_STEPS[IGS_STEPS.length - 1]);
+    this.activeStepSub$.next(this.steps[this.steps.length - 1]);
   }
 
   lastResultsAvailable(): boolean {
@@ -215,7 +210,7 @@ export class IgsMeldungService {
   }
 
   canProceed(): boolean {
-    const currentStepIndex = IGS_STEPS.indexOf(this.activeStepSub$.value);
+    const currentStepIndex = this.steps.indexOf(this.activeStepSub$.value);
     switch (currentStepIndex) {
       case 0:
         return this.csvFileParsed();
@@ -238,33 +233,20 @@ export class IgsMeldungService {
       }
     });
     localStorage.setItem(IgsLocalStorageKeys.NOTIFICATION_UPLOADS, JSON.stringify(this.notificationUploadsSub$.value));
-    this.activeStepSub$.next(IGS_STEPS[3]);
+    this.activeStepSub$.next(this.steps[3]);
     this.uploadCanceled$.next(true);
     this.uploadCanceledSubject.next(true);
   }
 
   /**
    * Resets the IGS meldung workflow back to the welcome step.
-   * @param resetCallback Optional callback for resetting navigation. Currently only used when FEATURE_FLAG_PORTAL_IGS_SIDENAV is enabled.
-   * TODO: Make this parameter required once FEATURE_FLAG_PORTAL_IGS_SIDENAV is removed and becomes the default behavior.
+   * Delegates the stepper and FormControl reset to StepNavigation.reset(),
+   * which is a no-op when no stepper is registered (legacy path without SideNavigation).
    */
-  backToWelcome(resetCallback?: () => void) {
-    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.processSteps.forEach(step => {
-        step.control.enable();
-      });
-      // Do the navigational reset via the StepNavigationService
-      resetCallback?.();
-      // Reset all step controls
-      this.processSteps.forEach(step => {
-        if (step.key !== 'csv-upload') {
-          step.control.reset();
-          step.control.disable();
-        }
-      });
-    }
+  backToWelcome() {
+    this.stepNavigationService.reset();
     this.csvFileSub$.next(null);
-    this.activeStepSub$.next(IGS_STEPS[0]);
+    this.activeStepSub$.next(this.steps[0]);
     this.overviewDataSub$.next(null);
     this.attachedFilesSub$.next([]);
     this.fileUploadsSub$.next([]);
@@ -361,11 +343,11 @@ export class IgsMeldungService {
   }
 
   private initializeDataStructures() {
-    localStorage.setItem(IgsLocalStorageKeys.UPLOAD_ERRORS, JSON.stringify(IGS_INITIAL_STATE.uploadErrors));
-    this.rowErrorsSub$.next(IGS_INITIAL_STATE.uploadErrors);
+    localStorage.setItem(IgsLocalStorageKeys.UPLOAD_ERRORS, JSON.stringify([]));
+    this.rowErrorsSub$.next([]);
 
-    localStorage.setItem(IgsLocalStorageKeys.FILE_UPLOADS, JSON.stringify(IGS_INITIAL_STATE.fileUploads));
-    this.fileUploadsSub$.next(IGS_INITIAL_STATE.fileUploads);
+    localStorage.setItem(IgsLocalStorageKeys.FILE_UPLOADS, JSON.stringify([]));
+    this.fileUploadsSub$.next([]);
 
     const overviewParsedRowResults = this.overviewDataSub$.value?.items;
     overviewParsedRowResults?.forEach(overviewParsedRowResult => {

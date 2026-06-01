@@ -18,7 +18,7 @@
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender, ngMocks } from 'ng-mocks';
-import { LoggerModule } from 'ngx-logger';
+import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { lastValueFrom, of } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
@@ -26,14 +26,20 @@ import { FhirValidationResponseService } from 'src/api/services/fhir-validation-
 import { MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
 import { ChunkUploadResponse, SequenceUploadService, SequenceValidationInfo, UploadProcessInfo } from 'src/api/services/sequence-upload.service';
-import { AppModule } from 'src/app/app.module';
 import { igsBatchFastqTestdata } from 'src/app/components/igs-meldung/igs-batch-fastq.testdata';
 import { IgsMeldungService } from 'src/app/components/igs-meldung/igs-meldung.service';
+import { provideStepNavigation, SideNavigationComponent, MaxHeightContentContainerComponent } from '@gematik/demis-portal-core-library';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
 import { ConfigService } from 'src/app/config.service';
 import { UploadProgress } from 'src/shared/shared-functions';
 import { mockFileList } from '../shared-behaviour/mock-file-list.function';
-import { AppWrapperComponent } from 'src/app/app-wrapper.component';
+import { IgsNotificationComponent } from 'src/app/igs-notification/igs-notification.component';
+import { CsvUploadComponent } from 'src/app/components/igs-meldung/csv-upload/csv-upload.component';
+import { SequenceSelectionComponent } from 'src/app/components/igs-meldung/sequence-selection/sequence-selection.component';
+import { UploadStatusComponent } from 'src/app/components/igs-meldung/upload-status/upload-status.component';
+import { ResultComponent } from 'src/app/components/igs-meldung/result/result.component';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 /**
  * Integration tests for IgsNotificationComponent with SideNavigation (FEATURE_FLAG_PORTAL_IGS_SIDENAV).
@@ -43,8 +49,8 @@ import { AppWrapperComponent } from 'src/app/app-wrapper.component';
  * the legacy test file.
  */
 describe('Igs - Integration Tests (with FEATURE_FLAG_PORTAL_IGS_SIDENAV)', () => {
-  let fixture: MockedComponentFixture<AppWrapperComponent, AppWrapperComponent>;
-  let component: AppWrapperComponent;
+  let fixture: MockedComponentFixture<IgsNotificationComponent, IgsNotificationComponent>;
+  let component: IgsNotificationComponent;
   let igsMeldungService: IgsMeldungService;
 
   /**
@@ -174,9 +180,18 @@ describe('Igs - Integration Tests (with FEATURE_FLAG_PORTAL_IGS_SIDENAV)', () =>
   };
 
   beforeEach(() =>
-    MockBuilder([AppWrapperComponent, AppModule])
+    MockBuilder([IgsNotificationComponent])
       .keep(IgsMeldungService)
+      .keep(SideNavigationComponent)
+      .keep(MaxHeightContentContainerComponent)
+      .keep(MatSidenavModule)
+      .keep(NoopAnimationsModule)
+      .keep(CsvUploadComponent)
+      .keep(SequenceSelectionComponent)
+      .keep(UploadStatusComponent)
+      .keep(ResultComponent)
       .mock(LoggerModule)
+      .mock(NGXLogger)
       .provide(MockProvider(MeldungsdatenCsvFileUploadService, overrides.meldungsdatenCsvFileUploadService))
       .provide(MockProvider(DocumentReferenceService, overrides.documentReferenceService))
       .provide(MockProvider(SequenceUploadService, overrides.sequenceUploadService))
@@ -184,12 +199,13 @@ describe('Igs - Integration Tests (with FEATURE_FLAG_PORTAL_IGS_SIDENAV)', () =>
       .provide(MockProvider(FhirValidationResponseService, overrides.fhirValidationResponseService))
       .provide(MockProvider(ExportToFileService, overrides.exportToFileService))
       .provide(MockProvider(ConfigService, overrides.configService))
+      .provide(provideStepNavigation())
       .provide(provideHttpClient(withInterceptorsFromDi()))
       .provide(provideHttpClientTesting())
   );
 
   beforeEach(() => {
-    fixture = MockRender(AppWrapperComponent);
+    fixture = MockRender(IgsNotificationComponent);
     component = fixture.point.componentInstance;
 
     // Get IgsMeldungService instance and reset state before each test

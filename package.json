@@ -1,6 +1,6 @@
 {
   "name": "portal-igs",
-  "version": "1.4.1-snapshot",
+  "version": "1.4.2-snapshot",
   "overrides": {
     "ng-mocks": {
       "@angular/common": "$@angular/common",
@@ -37,9 +37,8 @@
     "@angular/material": "21.2.2",
     "@angular/material-date-fns-adapter": "21.2.2",
     "@angular/platform-browser": "21.2.4",
-    "@angular/platform-browser-dynamic": "21.2.4",
     "@angular/router": "21.2.4",
-    "@gematik/demis-portal-core-library": "3.0.9",
+    "@gematik/demis-portal-core-library": "4.2.1",
     "@ngx-formly/core": "7.1.0",
     "@ngx-formly/material": "7.1.0",
     "date-fns": "4.1.0",
@@ -51,20 +50,20 @@
     "single-spa-angular": "9.2.0",
     "systemjs-webpack-interop": "2.3.7",
     "tslib": "2.8.1",
-    "uuid": "11.1.0",
+    "uuid": "14.0.0",
     "zone.js": "0.16.1"
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "21.0.3",
     "@angular-devkit/build-angular": "21.2.2",
-    "@angular/build": "21.2.2",
-    "@angular/cli": "21.2.2",
-    "@angular/compiler-cli": "21.2.4",
     "@angular-eslint/builder": "21.2.0",
     "@angular-eslint/eslint-plugin": "21.2.0",
     "@angular-eslint/eslint-plugin-template": "21.2.0",
     "@angular-eslint/schematics": "21.2.0",
     "@angular-eslint/template-parser": "21.2.0",
+    "@angular/build": "21.2.2",
+    "@angular/cli": "21.2.2",
+    "@angular/compiler-cli": "21.2.4",
     "@types/jasmine": "5.1.9",
     "@types/node": "25.2.2",
     "@types/uuid": "10.0.0",

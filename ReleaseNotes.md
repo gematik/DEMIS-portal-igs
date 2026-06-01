@@ -2,6 +2,15 @@
 
 # Release portal-igs
 
+## Release 1.4.2
+
+- Removed @angular/platform-browser-dynamic
+- Migrated components to standalone
+- Fixed form reset bug with new dedicated step navigation service architecture from portal-core
+- Updated docker base image to 1.29.8-alpine3.23-slim
+- Updated @gematik/demis-portal-core-library to 4.2.1
+- Adapted logging to be configurable via environment
+
 ## Release 1.4.1
 
 - Dependency updates because of GHSA-g93w-mfhg-p222
