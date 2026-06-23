@@ -1,4 +1,10 @@
 :host {
+  // Adds spacing below the file-select dropzone to separate it visually from the section header below.
+  gem-demis-file-select {
+    display: block;
+    margin-bottom: 30px;
+  }
+
   .mat-column-dateOfSequencing {
     max-width: 128px;
   }
