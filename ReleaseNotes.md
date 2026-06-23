@@ -2,6 +2,11 @@
 
 # Release portal-igs
 
+## Release 1.4.3
+
+- Fixed styling errors for different spacings and diversity problems
+- Updated @gematik/demis-portal-core-library to 4.2.4
+
 ## Release 1.4.2
 
 - Removed @angular/platform-browser-dynamic
