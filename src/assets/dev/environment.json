@@ -6,9 +6,7 @@
   },
   "featureFlags": {
     "FEATURE_FLAG_NEW_API_ENDPOINTS": false,
-    "FEATURE_FLAG_PORTAL_HEADER_FOOTER": true,
     "FEATURE_FLAG_PORTAL_IGS_SIDENAV": true,
-    "FEATURE_FLAG_PORTAL_ACCESSIBILITY": true,
     "FEATURE_FLAG_FOOTER_LINKS_CORRECTION": true
   },
   "ngxLoggerConfig": {

@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
@@ -76,7 +77,13 @@ describe('ResultComponent', () => {
       .mock(NGXLogger)
       .mock(MessageDialogService)
       .mock(ExportToFileService)
-      .mock(StepNavigation)
+      .mock(StepNavigation, {
+        next: vi.fn(),
+        previous: vi.fn(),
+        reset: vi.fn(),
+        goToStep: vi.fn(),
+        goToStepByKey: vi.fn(),
+      })
       .keep(NgTemplateOutlet)
   );
 
@@ -113,16 +120,16 @@ describe('ResultComponent', () => {
   it('should build a datasource', () => {
     const dataSource = component.toDataSource(results);
 
-    expect(dataSource instanceof MatTableDataSource).toBeTrue();
+    expect(dataSource instanceof MatTableDataSource).toBe(true);
     expect(dataSource.data).toEqual(results);
   });
 
   it('should open the upload error dialog with correct data', () => {
     const dialogService = TestBed.inject(MessageDialogService);
-    const spy = spyOn(dialogService, 'showErrorDialog');
+    const spy = vi.spyOn(dialogService, 'showErrorDialog');
     component.onClickUploadError(2);
     /* we create a clone of the expected error in order not to influence other test cases when we delete property
-       rowNumber */
+           rowNumber */
     const expectedError = structuredClone(mockErrors[0]);
     delete (expectedError as unknown as IndexAccessible)['rowNumber'];
     expect(spy).toHaveBeenCalledWith(expectedError);
@@ -131,9 +138,9 @@ describe('ResultComponent', () => {
   it('should show an error dialog, when no notification upload data are available in local storage', () => {
     localStorage.clear();
     const logger = TestBed.inject(NGXLogger);
-    spyOn(logger, 'error');
+    vi.spyOn(logger, 'error');
     const messageDialog = TestBed.inject(MessageDialogService);
-    spyOn(messageDialog, 'showErrorDialog');
+    vi.spyOn(messageDialog, 'showErrorDialog');
 
     component.downloadReport();
 
@@ -156,7 +163,7 @@ describe('ResultComponent', () => {
       '{"rowNumber":3,"demisNotificationId":"00000000-0000-0000-0000-000000000000","labSequenceId":"Sample12346","status":"ERROR"}]';
     localStorage.setItem(IgsLocalStorageKeys.NOTIFICATION_UPLOADS, notificationUploads);
     const exportToFileService = TestBed.inject(ExportToFileService);
-    spyOn(exportToFileService, 'exportToCsvFile');
+    vi.spyOn(exportToFileService, 'exportToCsvFile');
 
     component.downloadReport();
 
@@ -199,7 +206,7 @@ describe('ResultComponent', () => {
 
     beforeEach(() => {
       configService = TestBed.inject(ConfigService);
-      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
       igsMeldungService = TestBed.inject(IgsMeldungService);
     });
 
@@ -209,7 +216,7 @@ describe('ResultComponent', () => {
     });
 
     it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
-      const backToWelcomeSpy = spyOn(igsMeldungService, 'backToWelcome');
+      const backToWelcomeSpy = vi.spyOn(igsMeldungService, 'backToWelcome');
 
       component.backToWelcome();
 

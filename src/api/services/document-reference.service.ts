@@ -24,14 +24,16 @@ import { validate as isValidUuid } from 'uuid';
 export type CreateDocumentReferenceRequestProps = { fileHash: string };
 export type CreateDocumentReferenceApiResponse = { sequenceUploadUrl: string };
 
-export type CreateDocumentReferenceResponse = CreateDocumentReferenceApiResponse & { documentReferenceId: string | undefined };
+export type CreateDocumentReferenceResponse = CreateDocumentReferenceApiResponse & {
+  documentReferenceId: string | undefined;
+};
 
 @Injectable({
   providedIn: 'root',
 })
 export class DocumentReferenceService {
-  private http = inject(HttpClient);
-  private configService = inject(ConfigService);
+  private readonly http = inject(HttpClient);
+  private readonly configService = inject(ConfigService);
 
   createDocumentReference(props: CreateDocumentReferenceRequestProps): Observable<CreateDocumentReferenceResponse> {
     const url = `${this.configService.igsGatewayUrl}/document-reference?hash=${props.fileHash}`;

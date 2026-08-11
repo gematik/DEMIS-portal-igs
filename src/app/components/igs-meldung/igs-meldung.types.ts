@@ -15,8 +15,6 @@
     find details in the "Readme" file.
  */
 
-import { FhirValidationResponse } from 'src/api/services/fhir-validation-response.types';
-
 export namespace IgsMeldung {
   export type OverviewResponse = {
     items: OverviewParsedRowResult[];

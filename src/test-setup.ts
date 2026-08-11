@@ -15,11 +15,16 @@
     find details in the "Readme" file.
  */
 
-import { getTestBed } from '@angular/core/testing';
-import { BrowserTestingModule, platformBrowserTesting } from '@angular/platform-browser/testing';
+import { afterEach, beforeEach, vi } from 'vitest';
 
-// First, initialize the Angular testing environment.
-getTestBed().initTestEnvironment(BrowserTestingModule, platformBrowserTesting());
+import '@angular/compiler';
+import '@analogjs/vitest-angular/setup-zone';
+import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+
+setupTestBed({
+  zoneless: false,
+  teardown: { destroyAfterEach: true },
+});
 
 // Mock fetch globally for all tests
 const mockEnvironmentConfig = {
@@ -30,18 +35,17 @@ const mockEnvironmentConfig = {
   },
   featureFlags: {
     FEATURE_FLAG_PORTAL_IGS_SIDENAV: false,
-    FEATURE_FLAG_PORTAL_HEADER_FOOTER: false,
   },
 };
 
 // Store the original fetch to restore it after each test
-const originalFetch = window.fetch;
+const originalFetch = globalThis.fetch;
 
 beforeEach(() => {
   // Check if fetch is already spied upon, if not mock it
-  const isSpy = (window.fetch as any).and !== undefined;
+  const isSpy = (globalThis.fetch as any).and !== undefined;
   if (!isSpy) {
-    spyOn(window, 'fetch').and.returnValue(
+    vi.spyOn(globalThis, 'fetch').mockReturnValue(
       Promise.resolve({
         ok: true,
         status: 200,
@@ -55,5 +59,5 @@ beforeEach(() => {
 
 afterEach(() => {
   // Restore the original fetch after each test to ensure test isolation
-  window.fetch = originalFetch;
+  globalThis.fetch = originalFetch;
 });

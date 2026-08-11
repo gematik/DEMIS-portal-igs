@@ -145,19 +145,16 @@ export class IgsMeldungService {
   readonly overviewData$ = this.overviewDataSub$.asObservable();
   readonly sequenceFileSelectionOverviewData$ = this.overviewDataSub$.asObservable().pipe(
     map(overviewData =>
-      !overviewData
-        ? []
-        : overviewData.items.map(
-            item =>
-              ({
-                rowNumber: item.data.rowNumber,
-                dateOfSequencing: new Date(item.data.dateOfSequencing),
-                demisNotificationId: item.data.demisNotificationId,
-                labSequenceId: item.data.labSequenceId,
-                fileOneName: item.data.fileOneName,
-                fileTwoName: item.data.fileTwoName,
-              }) as IgsMeldung.SequenzdateienSelectOverview
-          )
+      overviewData
+        ? overviewData.items.map(item => ({
+            rowNumber: item.data.rowNumber,
+            dateOfSequencing: new Date(item.data.dateOfSequencing),
+            demisNotificationId: item.data.demisNotificationId,
+            labSequenceId: item.data.labSequenceId,
+            fileOneName: item.data.fileOneName,
+            fileTwoName: item.data.fileTwoName,
+          }))
+        : []
     )
   );
   readonly attachedFiles$ = this.attachedFilesSub$.asObservable();
@@ -359,7 +356,7 @@ export class IgsMeldungService {
           demisNotificationId: notification.demisNotificationId,
           labSequenceId: notification.labSequenceId,
           status: 'PLANNED',
-        } as IgsMeldung.NotificationUploadInfo,
+        },
       ]);
     });
     localStorage.setItem(IgsLocalStorageKeys.NOTIFICATION_UPLOADS, JSON.stringify(this.notificationUploadsSub$.value));
@@ -379,13 +376,12 @@ export class IgsMeldungService {
 
   getNotificationUploadStatus(notification: IgsMeldung.OverviewData) {
     return (
-      this.notificationUploadsSub$.value.find(notificationUploadInfo => notificationUploadInfo.rowNumber === notification.rowNumber) ??
-      ({
+      this.notificationUploadsSub$.value.find(notificationUploadInfo => notificationUploadInfo.rowNumber === notification.rowNumber) ?? {
         rowNumber: notification.rowNumber,
         demisNotificationId: notification.demisNotificationId,
         labSequenceId: notification.labSequenceId,
         status: 'WAITING',
-      } as IgsMeldung.NotificationUploadInfo)
+      }
     );
   }
 
@@ -405,14 +401,11 @@ export class IgsMeldungService {
     try {
       return lastValueFrom(
         this.documentReferenceService.createDocumentReference({ fileHash }).pipe(
-          map(
-            (createDocumentReferenceResponse: CreateDocumentReferenceResponse) =>
-              ({
-                file: sequenceFile,
-                sequenceUploadUrl: createDocumentReferenceResponse.sequenceUploadUrl,
-                documentReferenceId: createDocumentReferenceResponse.documentReferenceId,
-              }) as UploadSequenceFileParams
-          )
+          map((createDocumentReferenceResponse: CreateDocumentReferenceResponse) => ({
+            file: sequenceFile,
+            sequenceUploadUrl: createDocumentReferenceResponse.sequenceUploadUrl,
+            documentReferenceId: createDocumentReferenceResponse.documentReferenceId,
+          }))
         )
       );
     } catch (err: any) {
@@ -496,7 +489,12 @@ export class IgsMeldungService {
           await this.uploadSingleSequenceFile(uploadSequenceFileParams);
         } catch (err: any) {
           this.logger.error('Error uploading sequence file', err);
-          this.updateFileUploadInfos(this.buildFileUploadInfo(uploadSequenceFileParams, { progress: 100, error: err.message }));
+          this.updateFileUploadInfos(
+            this.buildFileUploadInfo(uploadSequenceFileParams, {
+              progress: 100,
+              error: err.message,
+            })
+          );
           throw err;
         }
 
@@ -533,7 +531,7 @@ export class IgsMeldungService {
         ...fileUploadInfo,
         status: 'SUCCESS',
       };
-      if (!!uploadStatus.error) {
+      if (uploadStatus.error) {
         fileUploadInfo = {
           ...fileUploadInfo,
           status: 'ERROR',
@@ -548,15 +546,15 @@ export class IgsMeldungService {
   private updateFileUploadInfos(newFileUploadInfo: IgsMeldung.FileUploadInfo) {
     // Build updated file upload collection
     let updatedFileUploads = [...this.fileUploadsSub$.value];
-    const existingFileUploadInfo = updatedFileUploads.find(fileUploadInfo => fileUploadInfo.file.name === newFileUploadInfo.file.name);
-    if (!existingFileUploadInfo) {
-      // Add file upload process, if not already present
-      updatedFileUploads.push(newFileUploadInfo);
-    } else {
+    const existingFileUploadInfo = updatedFileUploads.some(fileUploadInfo => fileUploadInfo.file.name === newFileUploadInfo.file.name);
+    if (existingFileUploadInfo) {
       // Update file upload process, if already present
       updatedFileUploads = updatedFileUploads.map(fileUploadInfo =>
         fileUploadInfo.file.name === newFileUploadInfo.file.name ? newFileUploadInfo : fileUploadInfo
       );
+    } else {
+      // Add file upload process, if not already present
+      updatedFileUploads.push(newFileUploadInfo);
     }
 
     // publish updated file upload collection
@@ -587,11 +585,21 @@ export class IgsMeldungService {
         return;
       case 'VALIDATION_FAILED':
         this.logger.error('Sequence file validation failed', file, validationInfo);
-        this.updateFileUploadInfos({ file, progress: 100, status: 'ERROR', error: `Sequence file validation failed. ${validationInfo.message}` });
+        this.updateFileUploadInfos({
+          file,
+          progress: 100,
+          status: 'ERROR',
+          error: `Sequence file validation failed. ${validationInfo.message}`,
+        });
         throw new SequenceUploadError('Die hochgeladene Sequenz ist nicht valide. Details: ' + validationInfo.message);
       case 'VALIDATING':
         this.logger.error('Sequence file validation took too long', file, validationInfo);
-        this.updateFileUploadInfos({ file, progress: 100, status: 'ERROR', error: `Sequence file validation took too long. ${validationInfo.message}` });
+        this.updateFileUploadInfos({
+          file,
+          progress: 100,
+          status: 'ERROR',
+          error: `Sequence file validation took too long. ${validationInfo.message}`,
+        });
         throw new SequenceUploadError('Die Sequenz konnte nicht in der vorgegebenen Zeit validiert werden');
       default:
         this.logger.error('Sequence file validation failed with unknown error', file, validationInfo);

@@ -120,9 +120,7 @@ config:
     igsServiceUrl: /surveillance/notification-sequence/v5/fhir
     maxRetry: 60
   featureFlags:
-    FEATURE_FLAG_PORTAL_HEADER_FOOTER: false
     FEATURE_FLAG_PORTAL_IGS_SIDENAV: false
-    FEATURE_FLAG_PORTAL_ACCESSIBILITY: false
     FEATURE_FLAG_FOOTER_LINKS_CORRECTION: false
   ngxLoggerConfig:
     level: 1,

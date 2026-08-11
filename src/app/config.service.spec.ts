@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ConfigService } from './config.service';
 
@@ -27,21 +28,20 @@ describe('ConfigService', () => {
       maxRetry: 12,
     },
     featureFlags: {
-      FEATURE_FLAG_PORTAL_HEADER_FOOTER: true,
       FEATURE_FLAG_NEW_API_ENDPOINTS: false,
     },
   };
 
   describe('with proper configuration', () => {
-    let fetchSpy: jasmine.Spy;
+    let fetchSpy: Mock;
 
     beforeEach(() => {
       // Check if fetch is already spied upon
-      const isSpy = (window.fetch as any).and !== undefined;
+      const isSpy = vi.isMockFunction(window.fetch);
       if (isSpy) {
         // Reset the spy with new return value
-        fetchSpy = window.fetch as jasmine.Spy;
-        fetchSpy.and.returnValue(
+        fetchSpy = window.fetch as Mock;
+        fetchSpy.mockReturnValue(
           Promise.resolve({
             ok: true,
             status: 200,
@@ -50,7 +50,7 @@ describe('ConfigService', () => {
         );
       } else {
         // Create new spy
-        fetchSpy = spyOn(window, 'fetch').and.returnValue(
+        fetchSpy = vi.spyOn(window, 'fetch').mockReturnValue(
           Promise.resolve({
             ok: true,
             status: 200,
@@ -69,7 +69,7 @@ describe('ConfigService', () => {
     });
 
     it('should have proper config values', async () => {
-      const response = await fetchSpy.calls.mostRecent().returnValue;
+      const response = await fetchSpy.mock.results.at(-1)!.value;
       await response.json();
 
       expect(fetchSpy).toHaveBeenCalled();
@@ -81,22 +81,37 @@ describe('ConfigService', () => {
     });
 
     it('should expose feature flags correctly', async () => {
-      const response = await fetchSpy.calls.mostRecent().returnValue;
+      const response = await fetchSpy.mock.results.at(-1)!.value;
       await response.json();
 
-      expect(service.isFeatureEnabled('FEATURE_FLAG_PORTAL_HEADER_FOOTER')).toBeTrue();
-      expect(service.isFeatureEnabled('FEATURE_FLAG_NEW_API_ENDPOINTS')).toBeFalse();
+      expect(service.isFeatureEnabled('FEATURE_FLAG_NEW_API_ENDPOINTS')).toBe(false);
     });
 
     it('should return false for unknown feature flags', async () => {
-      const response = await fetchSpy.calls.mostRecent().returnValue;
+      const response = await fetchSpy.mock.results.at(-1)!.value;
       await response.json();
 
-      expect(service.isFeatureEnabled('UNKNOWN_FLAG')).toBeFalse();
+      expect(service.isFeatureEnabled('UNKNOWN_FLAG')).toBe(false);
+    });
+  });
+
+  describe('before config is loaded', () => {
+    beforeEach(() => {
+      const pendingFetch = () => new Promise<Response>(() => {});
+      const isSpy = vi.isMockFunction(window.fetch);
+      if (isSpy) {
+        (window.fetch as Mock).mockImplementation(pendingFetch);
+      } else {
+        vi.spyOn(window, 'fetch').mockImplementation(pendingFetch);
+      }
+      TestBed.configureTestingModule({
+        providers: [ConfigService],
+      });
+      service = TestBed.inject(ConfigService);
     });
 
     it('should return safe defaults before config is loaded', () => {
-      expect(service.isFeatureEnabled('FEATURE_FLAG_PORTAL_HEADER_FOOTER')).toBeFalse();
+      expect(service.isFeatureEnabled('FEATURE_FLAG_NEW_API_ENDPOINTS')).toBe(false);
       expect(service.maxAttempts).toEqual(60);
     });
   });

@@ -21,7 +21,6 @@ import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-surveillance-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
   imports: [RouterOutlet],
 })
 export class AppComponent {}

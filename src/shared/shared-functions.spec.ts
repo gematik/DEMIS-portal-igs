@@ -15,21 +15,13 @@
     find details in the "Readme" file.
  */
 
+import { describe, expect, it } from 'vitest';
 import { of, throwError } from 'rxjs';
-import {
-  HttpErrorResponse,
-  HttpEventType,
-  HttpResponse,
-  HttpUploadProgressEvent,
-  HttpSentEvent,
-  HttpDownloadProgressEvent,
-  HttpHeaders,
-  HttpEvent,
-} from '@angular/common/http';
+import { HttpEventType, HttpResponse, HttpUploadProgressEvent } from '@angular/common/http';
 import { toFileUploadInfo, UploadProgress } from './shared-functions';
 
 describe('toFileUploadInfo', () => {
-  it('should return upload progress event', done => {
+  it('should return upload progress event', async () => {
     const uploadEvent: HttpUploadProgressEvent = {
       type: HttpEventType.UploadProgress,
       loaded: 50,
@@ -40,11 +32,10 @@ describe('toFileUploadInfo', () => {
       .pipe(toFileUploadInfo())
       .subscribe((result: UploadProgress<any>) => {
         expect(result.progress).toBe(50);
-        done();
       });
   });
 
-  it('should return upload progress event without total', done => {
+  it('should return upload progress event without total', async () => {
     const uploadEvent: HttpUploadProgressEvent = {
       type: HttpEventType.UploadProgress,
       loaded: 50,
@@ -54,11 +45,10 @@ describe('toFileUploadInfo', () => {
       .pipe(toFileUploadInfo())
       .subscribe((result: UploadProgress<any>) => {
         expect(result.progress).toBe(0);
-        done();
       });
   });
 
-  it('should return response event with body', done => {
+  it('should return response event with body', async () => {
     const responseEvent = new HttpResponse({ body: { data: 'test' } });
 
     of(responseEvent)
@@ -66,11 +56,10 @@ describe('toFileUploadInfo', () => {
       .subscribe((result: UploadProgress<any>) => {
         expect(result.progress).toBe(100);
         expect(result.payload).toEqual({ data: 'test' });
-        done();
       });
   });
 
-  it('should return response event with response', done => {
+  it('should return response event with response', async () => {
     const responseEvent = new HttpResponse({ body: { data: 'test' } });
 
     of(responseEvent)
@@ -78,11 +67,10 @@ describe('toFileUploadInfo', () => {
       .subscribe((result: UploadProgress<any>) => {
         expect(result.progress).toBe(100);
         expect(result.payload).toEqual(responseEvent);
-        done();
       });
   });
 
-  it('should handle error with detail', done => {
+  it('should handle error with detail', async () => {
     const errorResponse = {
       error: {
         detail: 'Detailed error message',
@@ -99,12 +87,11 @@ describe('toFileUploadInfo', () => {
         error: (result: UploadProgress<any>) => {
           expect(result.progress).toBe(100);
           expect(result.error).toBe('Detailed error message');
-          done();
         },
       });
   });
 
-  it('should handle error without detail', done => {
+  it('should handle error without detail', async () => {
     const errorResponse = {
       message: 'Error message',
     };
@@ -118,7 +105,6 @@ describe('toFileUploadInfo', () => {
         error: (result: UploadProgress<any>) => {
           expect(result.progress).toBe(100);
           expect(result.error).toBe('Error message');
-          done();
         },
       });
   });

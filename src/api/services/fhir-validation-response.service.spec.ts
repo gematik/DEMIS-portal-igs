@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, type MockedObject, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { FhirValidationResponseService } from './fhir-validation-response.service';
 import { FhirValidationResponse } from './fhir-validation-response.types';
@@ -22,17 +23,19 @@ import { NGXLogger } from 'ngx-logger';
 
 describe('FhirValidationResponseService', () => {
   let service: FhirValidationResponseService;
-  let loggerSpy: jasmine.SpyObj<NGXLogger>;
+  let loggerSpy: MockedObject<NGXLogger>;
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj('Logger', ['error']);
+    const spy = {
+      error: vi.fn().mockName('Logger.error'),
+    };
 
     TestBed.configureTestingModule({
       providers: [FhirValidationResponseService, { provide: NGXLogger, useValue: spy }],
     });
 
     service = TestBed.inject(FhirValidationResponseService);
-    loggerSpy = TestBed.inject(NGXLogger) as jasmine.SpyObj<NGXLogger>;
+    loggerSpy = TestBed.inject(NGXLogger) as MockedObject<NGXLogger>;
   });
 
   it('should parse stringified FHIR validation response', () => {

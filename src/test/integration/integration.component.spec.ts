@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MockBuilder, MockedComponentFixture, MockProvider, MockRender, ngMocks } from 'ng-mocks';
@@ -41,8 +42,8 @@ import { ConfigService } from 'src/app/config.service';
 import { AsyncPipe } from '@angular/common';
 
 /**
- * TODO: This test suite tests the legacy IgsMeldungComponent without feature flags.
- * Once FEATURE_FLAG_PORTAL_IGS_SIDENAV and FEATURE_FLAG_PORTAL_HEADER_FOOTER are removed,
+ * TODO: This test suite tests the legacy IgsMeldungComponent without side navigation.
+ * Once FEATURE_FLAG_PORTAL_IGS_SIDENAV is removed,
  * this file should be deleted and integration-with-sidenav.component.spec.ts should become
  * the main integration test file.
  */
@@ -53,43 +54,41 @@ describe('Igs - Integration Tests', () => {
   let documentReferenceCounter = 1;
 
   const spies = {
-    uploadMeldungsdatenCsvFile: jasmine.createSpy('uploadMeldungsdatenCsvFile').and.returnValue(
+    uploadMeldungsdatenCsvFile: vi.fn().mockReturnValue(
       of({
         progress: 100,
         payload: { items: [igsBatchFastqTestdata.items[0]] } as IgsMeldung.OverviewResponse,
       } as UploadProgress<IgsMeldung.OverviewResponse>)
     ),
-    createDocumentReference: jasmine.createSpy('createDocumentReference').and.returnValue(
+    createDocumentReference: vi.fn().mockReturnValue(
       of({
         documentReferenceId: `DR4711-${documentReferenceCounter++}`,
         sequenceUploadUrl: 'http://upload-to-this.url',
       } as CreateDocumentReferenceResponse)
     ),
-    getFileUploadInfo: jasmine.createSpy('getFileUploadInfo').and.returnValue(
+    getFileUploadInfo: vi.fn().mockReturnValue(
       of({
         uploadId: 'UL4711',
         presignedUrls: ['http://upload-chunk-to-this.url'],
         partSizeBytes: 9999999999,
       } as UploadProcessInfo)
     ),
-    uploadSequenceFileChunk: jasmine
-      .createSpy('uploadSequenceFileChunk')
-      .and.returnValue(lastValueFrom(of({ partNumber: 1, eTag: 'example-e-tag' } as ChunkUploadResponse))),
-    finishSequenceFileUpload: jasmine.createSpy('finishSequenceFileUpload').and.returnValue(of({})),
-    pollSequenceValidationResult: jasmine.createSpy('pollSequenceValidationResult').and.callFake((documentReferenceId: string) =>
+    uploadSequenceFileChunk: vi.fn().mockReturnValue(lastValueFrom(of({ partNumber: 1, eTag: 'example-e-tag' } as ChunkUploadResponse))),
+    finishSequenceFileUpload: vi.fn().mockReturnValue(of({})),
+    pollSequenceValidationResult: vi.fn().mockImplementation((documentReferenceId: string) =>
       of({
         documentReferenceId,
         status: 'VALID',
         message: 'Validation successful',
       } as SequenceValidationInfo)
     ),
-    submitMeldung: jasmine.createSpy('submitMeldung').and.returnValue(
+    submitMeldung: vi.fn().mockReturnValue(
       of({
         status: 'SUCCESS',
         message: 'Meldung erfolgreich übermittelt',
       })
     ),
-    exportToCsvFile: jasmine.createSpy('exportToCsvFile'),
+    exportToCsvFile: vi.fn(),
   };
 
   const overrides = {
@@ -195,11 +194,11 @@ describe('Igs - Integration Tests', () => {
       await setTimeout(() => {}, 100);
     } while (tries < retries && !showResultsButton);
     expect(showResultsButton).toBeDefined();
-    expect(spies.createDocumentReference).withContext('should call createDocumentReference').toHaveBeenCalled();
-    expect(spies.getFileUploadInfo).withContext('should call getFileUploadInfo').toHaveBeenCalled();
-    expect(spies.uploadSequenceFileChunk).withContext('should call uploadSequenceFileChunk').toHaveBeenCalled();
-    expect(spies.finishSequenceFileUpload).withContext('should call finishSequenceFileUpload').toHaveBeenCalled();
-    expect(spies.pollSequenceValidationResult).withContext('should call pollSequenceValidationResult').toHaveBeenCalled();
+    expect(spies.createDocumentReference, 'should call createDocumentReference').toHaveBeenCalled();
+    expect(spies.getFileUploadInfo, 'should call getFileUploadInfo').toHaveBeenCalled();
+    expect(spies.uploadSequenceFileChunk, 'should call uploadSequenceFileChunk').toHaveBeenCalled();
+    expect(spies.finishSequenceFileUpload, 'should call finishSequenceFileUpload').toHaveBeenCalled();
+    expect(spies.pollSequenceValidationResult, 'should call pollSequenceValidationResult').toHaveBeenCalled();
 
     // show the results
     showResultsButton?.nativeElement.click();
@@ -210,7 +209,7 @@ describe('Igs - Integration Tests', () => {
     expect(downloadButton).toBeDefined();
     downloadButton?.nativeElement.click();
     fixture.detectChanges();
-    expect(spies.exportToCsvFile).withContext('should call exportToCsvFile').toHaveBeenCalled();
+    expect(spies.exportToCsvFile, 'should call exportToCsvFile').toHaveBeenCalled();
   });
 
   it('should go back to start flow before upload sequence data', async () => {
@@ -281,11 +280,11 @@ describe('Igs - Integration Tests', () => {
       await setTimeout(() => {}, 100);
     } while (tries < retries && !showResultsButton);
     expect(showResultsButton).toBeDefined();
-    expect(spies.createDocumentReference).withContext('should call createDocumentReference').toHaveBeenCalled();
-    expect(spies.getFileUploadInfo).withContext('should call getFileUploadInfo').toHaveBeenCalled();
-    expect(spies.uploadSequenceFileChunk).withContext('should call uploadSequenceFileChunk').toHaveBeenCalled();
-    expect(spies.finishSequenceFileUpload).withContext('should call finishSequenceFileUpload').toHaveBeenCalled();
-    expect(spies.pollSequenceValidationResult).withContext('should call pollSequenceValidationResult').toHaveBeenCalled();
+    expect(spies.createDocumentReference, 'should call createDocumentReference').toHaveBeenCalled();
+    expect(spies.getFileUploadInfo, 'should call getFileUploadInfo').toHaveBeenCalled();
+    expect(spies.uploadSequenceFileChunk, 'should call uploadSequenceFileChunk').toHaveBeenCalled();
+    expect(spies.finishSequenceFileUpload, 'should call finishSequenceFileUpload').toHaveBeenCalled();
+    expect(spies.pollSequenceValidationResult, 'should call pollSequenceValidationResult').toHaveBeenCalled();
     fixture.detectChanges();
 
     //Upload Abbrechen

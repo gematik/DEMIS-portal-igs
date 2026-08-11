@@ -26,27 +26,33 @@ export declare type UploadProgress<T> = {
   error?: string;
 };
 
-export function toFileUploadInfo<T>(observe: PayloadType = 'body', onlyDetailOnError: Boolean = true) {
+export function toFileUploadInfo<T>(observe: PayloadType = 'body', onlyDetailOnError: boolean = true) {
   return function (source: Observable<HttpEvent<T>>): Observable<UploadProgress<T | HttpEvent<T>>> {
     return source.pipe(
       filter((event: HttpEvent<T>) => event.type === HttpEventType.UploadProgress || event.type === HttpEventType.Response),
       map((event: HttpEvent<T>) => {
         switch (event.type) {
           case HttpEventType.UploadProgress:
-            return { progress: event.total ? Math.round((100 * event.loaded) / event.total) : 0 } as UploadProgress<T>;
+            return { progress: event.total ? Math.round((100 * event.loaded) / event.total) : 0 };
           case HttpEventType.Response:
             if (observe === 'response') {
-              return { progress: 100, payload: event } as UploadProgress<HttpEvent<T>>;
+              return { progress: 100, payload: event };
             } else {
               return { progress: 100, payload: event.body } as UploadProgress<T>;
             }
           default:
-            return { progress: 100, error: 'Unknown error occurred' } as UploadProgress<T>;
+            return { progress: 100, error: 'Unknown error occurred' };
         }
       }),
       catchError(error => {
         if (error.error?.detail) {
-          return throwError(() => ({ progress: 100, error: onlyDetailOnError ? error.error.detail : error.error }) as UploadProgress<T>);
+          return throwError(
+            () =>
+              ({
+                progress: 100,
+                error: onlyDetailOnError ? error.error.detail : error.error,
+              }) as UploadProgress<T>
+          );
         }
         return throwError(() => ({ progress: 100, error: error.message }) as UploadProgress<T>);
       })

@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpClient, HttpHeaders, HttpResponse, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -36,7 +37,7 @@ describe('SequenceUploadService', () => {
   beforeEach(() => {
     service = TestBed.inject(SequenceUploadService);
     configService = TestBed.inject(ConfigService);
-    spyOnProperty(configService, 'igsServiceUrl', 'get').and.returnValue('http://mocked-url.com');
+    vi.spyOn(configService, 'igsServiceUrl', 'get').mockReturnValue('http://mocked-url.com');
   });
 
   it('should be created', () => {
@@ -56,7 +57,7 @@ describe('SequenceUploadService', () => {
     });
     const expectedChunkUploadResponse: ChunkUploadResponse = { partNumber, eTag: etag };
 
-    spyOn(TestBed.inject(HttpClient), 'request').and.returnValue(of(expectedResponse));
+    vi.spyOn(TestBed.inject(HttpClient), 'request').mockReturnValue(of(expectedResponse));
 
     const response = await service.uploadSequenceFileChunk({ presignedUrl, file, partNo: partNumber, partSizeBytes });
     expect(response).toEqual(expectedChunkUploadResponse);
@@ -75,7 +76,7 @@ describe('SequenceUploadService', () => {
     });
     const expectedChunkUploadResponse: ChunkUploadResponse = { partNumber, eTag: etag };
 
-    spyOn(TestBed.inject(HttpClient), 'request').and.returnValue(fromSimulatedUploadProgess(2, expectedResponse, new HttpHeaders({ etag })));
+    vi.spyOn(TestBed.inject(HttpClient), 'request').mockReturnValue(fromSimulatedUploadProgess(2, expectedResponse, new HttpHeaders({ etag })));
 
     const response = await service.uploadSequenceFileChunk({ presignedUrl, file, partNo: partNumber, partSizeBytes });
     expect(response).toEqual(expectedChunkUploadResponse);
@@ -88,14 +89,14 @@ describe('SequenceUploadService', () => {
     const partSizeBytes = file.size;
     const errorMessage = 'Upload failed';
 
-    spyOn(TestBed.inject(HttpClient), 'request').and.returnValue(throwError(() => new Error(errorMessage)));
+    vi.spyOn(TestBed.inject(HttpClient), 'request').mockReturnValue(throwError(() => new Error(errorMessage)));
 
-    await expectAsync(service.uploadSequenceFileChunk({ presignedUrl, file, partNo, partSizeBytes })).toBeRejectedWithError(errorMessage);
+    await expect(service.uploadSequenceFileChunk({ presignedUrl, file, partNo, partSizeBytes })).rejects.toThrowError(errorMessage);
   });
 
   it('should return validation result when status is VALID', async () => {
-    spyOn(service as any, 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(service as any, 'getValidationStatus').and.returnValue(Promise.resolve({ status: 'VALID' }));
+    vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(service as any, 'getValidationStatus').mockReturnValue(Promise.resolve({ status: 'VALID' }));
 
     let uploadCanceled = new Subject<boolean>();
     const result = await service.pollSequenceValidationResult('documentReference', uploadCanceled);
@@ -103,8 +104,8 @@ describe('SequenceUploadService', () => {
   });
 
   it('should return validation result when status is VALIDATION_FAILED', async () => {
-    spyOn(service as any, 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(service as any, 'getValidationStatus').and.returnValue(Promise.resolve({ status: 'VALIDATION_FAILED' }));
+    vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(service as any, 'getValidationStatus').mockReturnValue(Promise.resolve({ status: 'VALIDATION_FAILED' }));
 
     let uploadCanceled = new Subject<boolean>();
     const result = await service.pollSequenceValidationResult('documentReference', uploadCanceled);
@@ -112,14 +113,13 @@ describe('SequenceUploadService', () => {
   });
 
   it('should retry and eventually return validation result', async () => {
-    spyOnProperty(configService, 'maxAttempts', 'get').and.returnValue(3);
-    spyOnProperty(configService, 'waitBetweenRetires', 'get').and.returnValue(1);
-    spyOn(service as any, 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(service as any, 'getValidationStatus').and.returnValues(
-      Promise.resolve({ status: 'VALIDATING' }),
-      Promise.resolve({ status: 'VALIDATING' }),
-      Promise.resolve({ status: 'VALID' })
-    );
+    vi.spyOn(configService, 'maxAttempts', 'get').mockReturnValue(3);
+    vi.spyOn(configService, 'waitBetweenRetires', 'get').mockReturnValue(1);
+    vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(service as any, 'getValidationStatus')
+      .mockReturnValueOnce(Promise.resolve({ status: 'VALIDATING' }))
+      .mockReturnValueOnce(Promise.resolve({ status: 'VALIDATING' }))
+      .mockReturnValueOnce(Promise.resolve({ status: 'VALID' }));
 
     let uploadCanceled = new Subject<boolean>();
     const result = await service.pollSequenceValidationResult('documentReference', uploadCanceled);
@@ -127,18 +127,18 @@ describe('SequenceUploadService', () => {
   });
 
   it('should throw an error after max retries', async () => {
-    spyOnProperty(configService, 'maxAttempts', 'get').and.returnValue(3);
-    spyOnProperty(configService, 'waitBetweenRetires', 'get').and.returnValue(1);
-    spyOn(service as any, 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(service as any, 'getValidationStatus').and.returnValue(Promise.resolve({ status: 'VALIDATING' }));
+    vi.spyOn(configService, 'maxAttempts', 'get').mockReturnValue(3);
+    vi.spyOn(configService, 'waitBetweenRetires', 'get').mockReturnValue(1);
+    vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(service as any, 'getValidationStatus').mockReturnValue(Promise.resolve({ status: 'VALIDATING' }));
 
     let uploadCanceled = new Subject<boolean>();
-    await expectAsync(service.pollSequenceValidationResult('documentReference', uploadCanceled)).toBeRejectedWithError('Validation failed after 3 attempts');
+    await expect(service.pollSequenceValidationResult('documentReference', uploadCanceled)).rejects.toThrowError('Validation failed after 3 attempts');
   });
 
   it('should throw an error if initValidation fails', async () => {
-    spyOn(service as any, 'initValidation').and.returnValue(Promise.reject(new Error('Init validation failed')));
+    vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.reject(new Error('Init validation failed')));
 
-    await expectAsync(service.initValidation('documentReference')).toBeRejectedWithError('Init validation failed');
+    await expect(service.initValidation('documentReference')).rejects.toThrowError('Init validation failed');
   });
 });

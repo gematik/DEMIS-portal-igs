@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { MockBuilder } from 'ng-mocks';
@@ -56,8 +57,8 @@ describe('DocumentReferenceService', () => {
     } as CreateDocumentReferenceApiResponse;
     const expectedResponse: CreateDocumentReferenceResponse = { ...mockedApiResponse, documentReferenceId };
 
-    spyOn(httpClient, 'post').and.returnValue(of(mockedApiResponse));
+    vi.spyOn(httpClient, 'post').mockReturnValue(of(mockedApiResponse));
 
-    await expectAsync(firstValueFrom(service.createDocumentReference(props))).toBeResolvedTo(expectedResponse);
+    await expect(firstValueFrom(service.createDocumentReference(props))).resolves.toEqual(expectedResponse);
   });
 });

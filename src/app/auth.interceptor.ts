@@ -23,12 +23,12 @@ import { ConfigService } from './config.service';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  private logger = inject(NGXLogger);
-  private config = inject(ConfigService);
+  private readonly logger = inject(NGXLogger);
+  private readonly config = inject(ConfigService);
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     this.logger.debug('mfe igs - intercepting request', req);
-    const token = (window as any)['token'];
+    const token = (globalThis as any)['token'];
 
     if (!!token && this.isTokenNeeded(req)) {
       this.logger.debug('mfe igs - request needs a token', req);

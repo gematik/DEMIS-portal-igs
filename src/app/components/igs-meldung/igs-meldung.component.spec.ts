@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { MockBuilder, MockedComponentFixture, MockRender, ngMocks } from 'ng-mocks';
@@ -56,17 +57,10 @@ describe('IgsMeldungComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is enabled', () => {
-    spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+  it('should show footer', () => {
+    vi.spyOn(configService, 'isFeatureEnabled').mockImplementation(flag => flag === 'FEATURE_FLAG_FOOTER_LINKS_CORRECTION');
     fixture.detectChanges();
     const footer = ngMocks.findAll('gem-demis-forms-footer');
     expect(footer.length).toBe(1);
-  });
-
-  it('should NOT show footer when FEATURE_FLAG_PORTAL_HEADER_FOOTER is disabled', () => {
-    spyOn(configService, 'isFeatureEnabled').and.returnValue(false);
-    fixture.detectChanges();
-    const footer = ngMocks.findAll('gem-demis-forms-footer');
-    expect(footer.length).toBe(0);
   });
 });

@@ -18,7 +18,7 @@
 import { NgZone, isDevMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
 
-import { getSingleSpaExtraProviders, singleSpaAngular } from 'single-spa-angular';
+import { provideSingleSpaPlatform, singleSpaAngular } from 'single-spa-angular';
 import { singleSpaPropsSubject } from './single-spa/single-spa-props';
 import { AppProps } from 'single-spa';
 import { setPublicPath } from 'systemjs-webpack-interop';
@@ -56,7 +56,7 @@ const lifecycles = singleSpaAngular({
     singleSpaPropsSubject.next(singleSpaProps);
     return bootstrapApplication(AppComponent, {
       providers: [
-        getSingleSpaExtraProviders(),
+        provideSingleSpaPlatform(),
         provideZoneChangeDetection(),
         importProvidersFrom(
           BrowserModule,

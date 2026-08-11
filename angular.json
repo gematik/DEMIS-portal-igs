@@ -25,9 +25,7 @@
             "outputPath": "dist/portal-igs",
             "index": "src/index.html",
             "main": "src/main.single-spa.ts",
-            "polyfills": [
-              "zone.js"
-            ],
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
@@ -36,14 +34,10 @@
                 "glob": "**/*",
                 "input": "src/assets",
                 "output": "./assets/",
-                "ignore": [
-                  "dev"
-                ]
+                "ignore": ["dev"]
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "scripts": [],
             "customWebpackConfig": {
               "path": "./extra-webpack.config.js",
@@ -78,9 +72,7 @@
                   "glob": "**/*",
                   "input": "src/assets/",
                   "output": "./assets/",
-                  "ignore": [
-                    "dev"
-                  ]
+                  "ignore": ["dev"]
                 },
                 {
                   "glob": "**/*",
@@ -112,32 +104,7 @@
           }
         },
         "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "main": "src/test-setup.ts",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
-            "tsConfig": "tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "karmaConfig": "karma.conf.js",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
-            "scripts": [],
-            "codeCoverage": true,
-            "codeCoverageExclude": [
-              "src/test/**/*",
-              "src/test-setup.ts"
-            ],
-            "watch": false,
-            "preserveSymlinks": true
-          }
+          "builder": "@angular/build:unit-test"
         }
       }
     }

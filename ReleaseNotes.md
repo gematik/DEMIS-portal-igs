@@ -2,6 +2,15 @@
 
 # Release portal-igs
 
+## Release 1.4.4
+
+- Removed feature flag FEATURE_FLAG_PORTAL_HEADER_FOOTER: forms footer is now always rendered
+- Fixed third party license collection
+- Removed feature flag FEATURE_FLAG_PORTAL_ACCESSIBILITY
+- Replaced pod anti-affinity with topology spread constraints for pod distribution
+- Upgraded @gematik/demis-portal-core-library to 4.2.10
+- Migrated from Karma/Jasmine to Vitest/Browser/Playwright for unit testing
+
 ## Release 1.4.3
 
 - Fixed styling errors for different spacings and diversity problems
