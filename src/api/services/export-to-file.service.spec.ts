@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
 import { CsvExporter } from '../csv-exporter.injection-token';
@@ -64,10 +65,10 @@ describe('ExportToFileService', () => {
     const filename = 'test';
     const testCsvOutput = '"some";"csv";"data"';
     const expectedCsvConfig = { ...csvExporter.mkConfig(csvBaseConfig), filename };
-    const dataToCsvOutputFnSpy = jasmine.createSpy('dataToCsvOutputFnSpy').and.returnValue(testCsvOutput);
-    const generateCsvSpy = spyOn(TestBed.inject(CsvExporter), 'generateCsv').and.returnValue(dataToCsvOutputFnSpy);
-    const writeCsvOutputFnSpy = jasmine.createSpy('dataToCsvOutputFnSpy');
-    const downloadSpy = spyOn(TestBed.inject(CsvExporter), 'download').and.returnValue(writeCsvOutputFnSpy);
+    const dataToCsvOutputFnSpy = vi.fn().mockReturnValue(testCsvOutput);
+    const generateCsvSpy = vi.spyOn(TestBed.inject(CsvExporter), 'generateCsv').mockReturnValue(dataToCsvOutputFnSpy);
+    const writeCsvOutputFnSpy = vi.fn();
+    const downloadSpy = vi.spyOn(TestBed.inject(CsvExporter), 'download').mockReturnValue(writeCsvOutputFnSpy);
 
     service.exportToCsvFile(filename, notificationUploadInfo);
 

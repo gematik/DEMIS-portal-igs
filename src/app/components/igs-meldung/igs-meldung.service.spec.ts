@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { FileSizePipe, MessageDialogService, Step, StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder } from 'ng-mocks';
@@ -103,32 +104,32 @@ describe('IgsMeldungService', () => {
   });
 
   it('should have initial values for observables', async () => {
-    await expectAsync(firstValueFrom(service.csvFile$)).toBeResolvedTo(null);
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[0]);
-    await expectAsync(firstValueFrom(service.overviewData$)).toBeResolvedTo(null);
-    await expectAsync(firstValueFrom(service.sequenceFileSelectionOverviewData$)).toBeResolvedTo([]);
-    await expectAsync(firstValueFrom(service.attachedFiles$)).toBeResolvedTo([]);
-    await expectAsync(firstValueFrom(service.fileUploads$)).toBeResolvedTo([]);
-    await expectAsync(firstValueFrom(service.notificationUploads$)).toBeResolvedTo([]);
+    await expect(firstValueFrom(service.csvFile$)).resolves.toEqual(null);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[0]);
+    await expect(firstValueFrom(service.overviewData$)).resolves.toEqual(null);
+    await expect(firstValueFrom(service.sequenceFileSelectionOverviewData$)).resolves.toEqual([]);
+    await expect(firstValueFrom(service.attachedFiles$)).resolves.toEqual([]);
+    await expect(firstValueFrom(service.fileUploads$)).resolves.toEqual([]);
+    await expect(firstValueFrom(service.notificationUploads$)).resolves.toEqual([]);
   });
 
   it('should clear csvFile', async () => {
     const csvFile = new File([''], 'test.csv');
     service.useCsvFile(csvFile);
     service.clearCsvFile();
-    await expectAsync(firstValueFrom(service.csvFile$)).toBeResolvedTo(null);
+    await expect(firstValueFrom(service.csvFile$)).resolves.toEqual(null);
   });
 
   it('should useCsvFile', async () => {
     const csvFile = new File([''], 'test.csv');
     service.useCsvFile(csvFile);
-    await expectAsync(firstValueFrom(service.csvFile$)).toBeResolvedTo(csvFile);
+    await expect(firstValueFrom(service.csvFile$)).resolves.toEqual(csvFile);
   });
 
   it('should useParsedCsvOverviewData', async () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
-    await expectAsync(firstValueFrom(service.overviewData$)).toBeResolvedTo(igsBatchFastqTestdata);
-    await expectAsync(firstValueFrom(service.sequenceFileSelectionOverviewData$)).toBeResolvedTo(igsBatchFastqSequenzdateienSelectOverview);
+    await expect(firstValueFrom(service.overviewData$)).resolves.toEqual(igsBatchFastqTestdata);
+    await expect(firstValueFrom(service.sequenceFileSelectionOverviewData$)).resolves.toEqual(igsBatchFastqSequenzdateienSelectOverview);
   });
 
   it('should attachFiles', async () => {
@@ -137,7 +138,7 @@ describe('IgsMeldungService', () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     service.attachFiles(fileList);
 
-    await expectAsync(firstValueFrom(service.attachedFiles$)).toBeResolvedTo(files);
+    await expect(firstValueFrom(service.attachedFiles$)).resolves.toEqual(files);
   });
 
   it('should update error if attached file not found ', async () => {
@@ -145,7 +146,7 @@ describe('IgsMeldungService', () => {
     const files = Array.from(fileList);
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     const messageDialog = TestBed.inject(MessageDialogService);
-    const method = spyOn(messageDialog, 'showErrorDialog');
+    const method = vi.spyOn(messageDialog, 'showErrorDialog');
 
     service.attachFiles(fileList);
     expect(method).toHaveBeenCalledWith({
@@ -160,7 +161,7 @@ describe('IgsMeldungService', () => {
     const files = Array.from(fileList);
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     const messageDialog = TestBed.inject(MessageDialogService);
-    const method = spyOn(messageDialog, 'showErrorDialog');
+    const method = vi.spyOn(messageDialog, 'showErrorDialog');
 
     service.attachFiles(fileList);
     expect(method).toHaveBeenCalledWith({
@@ -187,25 +188,25 @@ describe('IgsMeldungService', () => {
 
     const stepNavigation = TestBed.inject(StepNavigation);
     if (!stepNavigation.reset) {
-      stepNavigation.reset = jasmine.createSpy('reset');
+      stepNavigation.reset = vi.fn();
     }
 
     // Call the reset method
     service.backToWelcome();
 
     // Expect the service state to be reset
-    await expectAsync(firstValueFrom(service.csvFile$)).toBeResolvedTo(null);
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[0]);
-    await expectAsync(firstValueFrom(service.overviewData$)).toBeResolvedTo(null);
-    await expectAsync(firstValueFrom(service.attachedFiles$)).toBeResolvedTo([]);
-    await expectAsync(firstValueFrom(service.fileUploads$)).toBeResolvedTo([]);
-    await expectAsync(firstValueFrom(service.notificationUploads$)).toBeResolvedTo([]);
+    await expect(firstValueFrom(service.csvFile$)).resolves.toEqual(null);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[0]);
+    await expect(firstValueFrom(service.overviewData$)).resolves.toEqual(null);
+    await expect(firstValueFrom(service.attachedFiles$)).resolves.toEqual([]);
+    await expect(firstValueFrom(service.fileUploads$)).resolves.toEqual([]);
+    await expect(firstValueFrom(service.notificationUploads$)).resolves.toEqual([]);
   });
 
   it('should reset the service state and adjust result for aborted upload', async () => {
     // Set initial values for the service state
-    const uploadCanceledSpy = spyOn<any>(service['uploadCanceled$'], 'next');
-    const uploadCanceledSubjectSpy = spyOn<any>(service['uploadCanceledSubject'], 'next');
+    const uploadCanceledSpy = vi.spyOn(service['uploadCanceled$'], 'next');
+    const uploadCanceledSubjectSpy = vi.spyOn(service['uploadCanceledSubject'], 'next');
     const notificationUploadsSub = service['notificationUploadsSub$'] as BehaviorSubject<IgsMeldung.NotificationUploadInfo[]>;
     notificationUploadsSub.next([
       {
@@ -231,7 +232,7 @@ describe('IgsMeldungService', () => {
     // Call the reset method
     service.cancel();
 
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[3]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[3]);
     expect(uploadCanceledSpy).toHaveBeenCalledWith(true);
     expect(uploadCanceledSubjectSpy).toHaveBeenCalledWith(true);
     // assert aborted state in service
@@ -269,13 +270,13 @@ describe('IgsMeldungService', () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     expect(service.canProceed()).toBe(true);
     service.proceed();
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[1]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[1]);
   });
 
   it('should not proceed if no CSV file is selected', async () => {
     expect(service.canProceed()).toBe(false);
     service.proceed();
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[0]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[0]);
   });
 
   it('should proceed to the next step if all sequence files are attached', async () => {
@@ -292,7 +293,7 @@ describe('IgsMeldungService', () => {
     service.attachFiles(fileList);
     expect(service.canProceed()).toBe(true);
     service.proceed();
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[2]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[2]);
   });
 
   it('should not proceed if not all sequence files are attached', async () => {
@@ -300,34 +301,34 @@ describe('IgsMeldungService', () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     service.attachFiles(fileList);
     service.proceed();
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[1]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[1]);
   });
 
   it('should proceed to the next step if notifications are uploaded', async () => {
     const uploadTimestamps: string[] = [];
     const demisSequenceIds: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').and.returnValue(of({ status: 'SUCCESS' }));
-    spyOn(TestBed.inject(SequenceUploadService), 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').mockReturnValue(of({ status: 'SUCCESS' }));
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').mockReturnValue(
       Promise.resolve({ documentReferenceId: 'docref-id', status: 'VALID', message: 'string' })
     );
-    spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').and.callFake(() => {
+    vi.spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').mockImplementation(() => {
       uploadTimestamps.push(new Date().toISOString());
       demisSequenceIds.push(`IGS-${10000 + Math.floor(Math.random() * 89999)}-PLAP-${crypto.randomUUID()}`);
       return of({
@@ -378,11 +379,11 @@ describe('IgsMeldungService', () => {
     );
     expect(service.canProceed()).toBe(true);
     service.proceed();
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[3]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[3]);
   });
 
   it('should not proceed if notifications are not uploaded', async () => {
-    spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').and.returnValue(
+    vi.spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').mockReturnValue(
       throwError(
         () =>
           ({
@@ -407,13 +408,13 @@ describe('IgsMeldungService', () => {
   });
 
   it('should not proceed if results are shown', async () => {
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({ sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}` } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').and.returnValue(
+    vi.spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').mockReturnValue(
       of({
         demisSequenceId: `IGS-${10000 + Math.floor(Math.random() * 89999)}-PLAP-${crypto.randomUUID()}`,
       } as MeldungSubmitResponse)
@@ -434,23 +435,23 @@ describe('IgsMeldungService', () => {
     service.proceed();
     expect(service.canProceed()).toBe(false);
     service.proceed();
-    await expectAsync(firstValueFrom(service.activeStep$)).toBeResolvedTo(service.steps[3]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[3]);
   });
 
   it('should write errors associated with create document reference to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockImplementation(() => {
+      throw new HttpErrorResponse({
         error: 'Error message',
         status: 500,
         statusText: 'Internal Server Error',
         url: 'https://igs.gateway/sequence-upload',
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -487,24 +488,24 @@ describe('IgsMeldungService', () => {
 
   it('should write errors associated with getFileUploadInfo to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockImplementation(() => {
+      throw new HttpErrorResponse({
         error: 'Error message',
         status: 400,
         statusText: 'Bad Request',
         url: 'https://igs.gateway/sequence-upload',
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -541,27 +542,27 @@ describe('IgsMeldungService', () => {
 
   it('should write errors associated with chunk upload to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockImplementation(() => {
+      throw new HttpErrorResponse({
         error: 'Error message',
         status: 401,
         statusText: 'Unauthorized',
         url: 'https://igs.gateway/sequence-upload',
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -598,30 +599,30 @@ describe('IgsMeldungService', () => {
 
   it('should write errors associated with finish upload to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').mockImplementation(() => {
+      throw new HttpErrorResponse({
         error: 'Error message',
         status: 404,
         statusText: 'Not Found',
         url: 'https://igs.gateway/sequence-upload',
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -658,31 +659,31 @@ describe('IgsMeldungService', () => {
 
   it('should write errors associated with initialize validation to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').and.returnValue(of({ status: 'SUCCESS' }));
-    spyOn(TestBed.inject(SequenceUploadService), 'initValidation').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').mockReturnValue(of({ status: 'SUCCESS' }));
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'initValidation').mockImplementation(() => {
+      throw new HttpErrorResponse({
         error: 'Error message',
         status: 403,
         statusText: 'Forbidden',
         url: 'https://igs.gateway/sequence-upload',
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -719,32 +720,32 @@ describe('IgsMeldungService', () => {
 
   it('should write errors associated with polling validation result to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').and.returnValue(of({ status: 'SUCCESS' }));
-    spyOn(TestBed.inject(SequenceUploadService), 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').mockReturnValue(of({ status: 'SUCCESS' }));
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').mockImplementation(() => {
+      throw new HttpErrorResponse({
         error: 'Error message',
         status: 405,
         statusText: 'Method Not Allowed',
         url: 'https://igs.gateway/sequence-upload',
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -781,26 +782,26 @@ describe('IgsMeldungService', () => {
 
   it('should write error concerning invalid sequence data to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').and.returnValue(of({ status: 'SUCCESS' }));
-    spyOn(TestBed.inject(SequenceUploadService), 'initValidation').and.returnValue(Promise.resolve());
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').mockReturnValue(of({ status: 'SUCCESS' }));
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'initValidation').mockReturnValue(Promise.resolve());
     let message = 'Invalid sequence -> found invalid character in sequence line Nr. 2';
-    spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').mockReturnValue(
       Promise.resolve({ documentReferenceId: 'docref-id', status: 'VALIDATION_FAILED', message: message })
     );
     const fileList = mockFileList([
@@ -839,33 +840,33 @@ describe('IgsMeldungService', () => {
 
   it('should get search string correct and put it to rowErrorsSub$', async () => {
     const uploadTimestamps: string[] = [];
-    spyOn(Date.prototype, 'toISOString').and.callFake(() => {
+    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
       uploadTimestamps.push(new Date().toLocaleString());
       return uploadTimestamps[uploadTimestamps.length - 1];
     });
-    spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').and.returnValue(
+    vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
         documentReferenceId: 'docref-id',
       } as CreateDocumentReferenceResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
       of({ uploadId: 'string', presignedUrls: [''], partSizeBytes: 1 } as UploadProcessInfo)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
     );
-    spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').and.returnValue(of({ status: 'SUCCESS' }));
-    spyOn(TestBed.inject(SequenceUploadService), 'initValidation').and.returnValue(Promise.resolve());
-    spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').and.returnValue(
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'finishSequenceFileUpload').mockReturnValue(of({ status: 'SUCCESS' }));
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'initValidation').mockReturnValue(Promise.resolve());
+    vi.spyOn(TestBed.inject(SequenceUploadService), 'pollSequenceValidationResult').mockReturnValue(
       Promise.resolve({ documentReferenceId: 'docref-id', status: 'VALID', message: 'valid' })
     );
-    spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').and.throwError(
-      new HttpErrorResponse({
+    vi.spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').mockImplementation(() => {
+      throw new HttpErrorResponse({
         status: 422,
         error: { detail: exampleOpperationOutcomeString },
-      })
-    );
+      });
+    });
     const fileList = mockFileList([
       igsBatchFastqTestdata.items[0].data.fileOneName,
       igsBatchFastqTestdata.items[0].data.fileTwoName,
@@ -924,34 +925,56 @@ describe('IgsMeldungService', () => {
   });
 
   it('should not start to send any notification if upload was canceled', async () => {
-    const functionThatShouldNotBeCalled = spyOn<any>(service, 'uploadSingleNotification');
-    spyOnProperty(service['uploadCanceled$'], 'value', 'get').and.returnValue(true);
-    spyOnProperty(service['overviewDataSub$'], 'value', 'get').and.returnValue(igsBatchFastqTestdata);
+    const meldungSubmitService = TestBed.inject(MeldungSubmitService);
+    const submitMeldungSpy = vi.spyOn(meldungSubmitService, 'submitMeldung');
+    service.useParsedCsvOverviewData(igsBatchFastqTestdata);
+    // uploadNotifications() resets the cancel flag internally, so the canceled state has to be forced here
+    vi.spyOn(service['uploadCanceled$'], 'value', 'get').mockReturnValue(true);
 
     await service.uploadNotifications();
 
-    expect(functionThatShouldNotBeCalled).not.toHaveBeenCalled();
+    expect(submitMeldungSpy).not.toHaveBeenCalled();
   });
 
   it('should only upload one chunk and stop after upload was canceled', async () => {
-    const uploadChunkFunctionSpy = spyOn(service['sequenceUploadService'], 'uploadSequenceFileChunk');
-    const updateFileInfoFunctionSpy = spyOn<any>(service, 'updateFileUploadInfos');
-    spyOn(service['sequenceUploadService'], 'getFileUploadInfo').and.returnValue(of(uploadProcessInfo[0]));
-    spyOnProperty(service['uploadCanceled$'], 'value', 'get').and.returnValues(false, true);
+    const sequenceUploadService = TestBed.inject(SequenceUploadService);
+    const uploadChunkFunctionSpy = vi.spyOn(sequenceUploadService, 'uploadSequenceFileChunk').mockImplementation(async () => {
+      // Simulate the user canceling the upload right after the first chunk was uploaded
+      service.cancel();
+      return { partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse;
+    });
+    vi.spyOn(sequenceUploadService, 'getFileUploadInfo').mockReturnValue(of(uploadProcessInfo[0]));
 
+    const emittedFileUploads: IgsMeldung.FileUploadInfo[][] = [];
+    const subscription = service.fileUploads$.subscribe(fileUploads => emittedFileUploads.push(fileUploads));
+
+    // The service starts in the canceled state, so put it into a running state before uploading
+    service['uploadCanceled$'].next(false);
     await service['uploadSingleSequenceFile'](uploadSequenceFileParams);
+    subscription.unsubscribe();
 
-    expect(updateFileInfoFunctionSpy).toHaveBeenCalledTimes(2);
+    // Only the first of the two chunks is uploaded before the cancellation aborts the loop
     expect(uploadChunkFunctionSpy).toHaveBeenCalledTimes(1);
+
+    // The file upload progress is published for the initial state (0%) and after the first chunk (50%)
+    const publishedUpdates = emittedFileUploads.slice(1);
+    expect(publishedUpdates).toHaveLength(2);
+    expect(publishedUpdates[0][0]).toMatchObject({ file: uploadSequenceFileParams.file, progress: 0 });
+    expect(publishedUpdates[1][0]).toMatchObject({ file: uploadSequenceFileParams.file, progress: 50 });
   });
 
-  it('should not validate sequence if upload was canceled', async () => {
-    const functionThatShouldNotBeCalled = spyOn<any>(service, 'validateSequence');
-    spyOn<any>(service, 'getDocumentReference').and.returnValue(uploadSequenceFileParams);
-    spyOn<any>(service, 'uploadSingleSequenceFile').and.callFake;
-    spyOnProperty(service['uploadCanceled$'], 'value', 'get').and.returnValue(true);
+  it('should not validate the sequence if the upload was canceled', async () => {
+    const documentReferenceService = TestBed.inject(DocumentReferenceService);
+    const sequenceUploadService = TestBed.inject(SequenceUploadService);
+    vi.spyOn(documentReferenceService, 'createDocumentReference').mockReturnValue(
+      of({ sequenceUploadUrl: 'https://upload-url', documentReferenceId: 'docref-id' } as CreateDocumentReferenceResponse)
+    );
+    vi.spyOn(sequenceUploadService, 'getFileUploadInfo').mockReturnValue(of(uploadProcessInfo[0]));
+    const initValidationSpy = vi.spyOn(sequenceUploadService, 'initValidation');
+    const pollValidationSpy = vi.spyOn(sequenceUploadService, 'pollSequenceValidationResult');
 
-    await service['uploadSequenceFiles']([
+    // The service starts in the canceled state, so the upload loop must abort before validating
+    const uploadedFiles = await service['uploadSequenceFiles']([
       {
         file: new File(['dummy content'], 'example.txt', {
           type: 'text/plain',
@@ -960,16 +983,19 @@ describe('IgsMeldungService', () => {
       },
     ]);
 
-    expect(functionThatShouldNotBeCalled).not.toHaveBeenCalled();
+    expect(initValidationSpy).not.toHaveBeenCalled();
+    expect(pollValidationSpy).not.toHaveBeenCalled();
+    expect(uploadedFiles).toEqual([]);
   });
 
-  it('should not send notification if upload was canceled', async () => {
-    const functionThatShouldNotBeCalled = spyOn<any>(service, 'meldungSubmitService');
-    spyOnProperty(service['uploadCanceled$'], 'value', 'get').and.returnValue(true);
+  it('should not submit the notification if the upload was canceled', async () => {
+    const meldungSubmitService = TestBed.inject(MeldungSubmitService);
+    const submitMeldungSpy = vi.spyOn(meldungSubmitService, 'submitMeldung');
 
+    // The service starts in the canceled state, so no notification must be submitted
     await service['submitNotification'](igsBatchFastqTestdata.items[0].data, [uploadSequenceFileParams]);
 
-    expect(functionThatShouldNotBeCalled).not.toHaveBeenCalled();
+    expect(submitMeldungSpy).not.toHaveBeenCalled();
   });
 
   it('should initialize local storage correctly when proceeding to results', () => {
@@ -1026,18 +1052,18 @@ describe('IgsMeldungService', () => {
 
     beforeEach(() => {
       configService = TestBed.inject(ConfigService);
-      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
     });
 
     it('should mark current step as valid and enable next step when proceeding', () => {
       const currentStepControl = service.processSteps[0].control;
       const nextStepControl = service.processSteps[1].control;
 
-      spyOn(currentStepControl, 'setValue').and.callThrough();
-      spyOn(currentStepControl, 'markAsTouched').and.callThrough();
-      spyOn(currentStepControl, 'updateValueAndValidity').and.callThrough();
-      spyOn(nextStepControl, 'enable').and.callThrough();
-      spyOn(service, 'canProceed').and.returnValue(true);
+      vi.spyOn(currentStepControl, 'setValue');
+      vi.spyOn(currentStepControl, 'markAsTouched');
+      vi.spyOn(currentStepControl, 'updateValueAndValidity');
+      vi.spyOn(nextStepControl, 'enable');
+      vi.spyOn(service, 'canProceed').mockReturnValue(true);
 
       service.proceed();
 

@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
 import { StepNavigation } from '@gematik/demis-portal-core-library';
@@ -32,7 +33,15 @@ describe('SequenceSelectionComponent', () => {
   let component: SequenceSelectionComponent;
   let igsMeldungService: IgsMeldungService;
 
-  beforeEach(() => MockBuilder([SequenceSelectionComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation));
+  beforeEach(() =>
+    MockBuilder([SequenceSelectionComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation, {
+      next: vi.fn(),
+      previous: vi.fn(),
+      reset: vi.fn(),
+      goToStep: vi.fn(),
+      goToStepByKey: vi.fn(),
+    })
+  );
 
   beforeEach(() => {
     fixture = MockRender(SequenceSelectionComponent);
@@ -57,7 +66,7 @@ describe('SequenceSelectionComponent', () => {
 
   it('should handle null file list', () => {
     const fileList: FileList | null = null;
-    const attachFilesSpy = spyOn(igsMeldungService, 'attachFiles');
+    const attachFilesSpy = vi.spyOn(igsMeldungService, 'attachFiles');
 
     component.onFilesSelected(fileList);
 
@@ -66,7 +75,7 @@ describe('SequenceSelectionComponent', () => {
 
   it('should handle empty file list', () => {
     const fileList = mockFileList([]);
-    const attachFilesSpy = spyOn(igsMeldungService, 'attachFiles');
+    const attachFilesSpy = vi.spyOn(igsMeldungService, 'attachFiles');
 
     component.onFilesSelected(fileList);
 
@@ -75,7 +84,7 @@ describe('SequenceSelectionComponent', () => {
 
   it('should handle non-empty file list', () => {
     const fileList = mockFileList(['testfile.txt']);
-    const attachFilesSpy = spyOn(igsMeldungService, 'attachFiles');
+    const attachFilesSpy = vi.spyOn(igsMeldungService, 'attachFiles');
 
     component.onFilesSelected(fileList);
 
@@ -87,12 +96,12 @@ describe('SequenceSelectionComponent', () => {
 
     beforeEach(() => {
       configService = TestBed.inject(ConfigService);
-      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
     });
 
     it('should disable processSteps[0] control in ngOnInit', () => {
       const processSteps = igsMeldungService.processSteps;
-      const disableSpy = spyOn(processSteps[0].control, 'disable');
+      const disableSpy = vi.spyOn(processSteps[0].control, 'disable');
 
       component.ngOnInit();
 
@@ -100,9 +109,9 @@ describe('SequenceSelectionComponent', () => {
     });
 
     it('should call stepNavigationService.next() in proceed method', () => {
-      const stepNavigationService = { next: jasmine.createSpy('next') };
+      const stepNavigationService = { next: vi.fn() };
       (component as any).stepNavigationService = stepNavigationService;
-      const proceedSpy = spyOn(igsMeldungService, 'proceed');
+      const proceedSpy = vi.spyOn(igsMeldungService, 'proceed');
 
       component.proceed();
 
@@ -111,7 +120,7 @@ describe('SequenceSelectionComponent', () => {
     });
 
     it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
-      const backToWelcomeSpy = spyOn(igsMeldungService, 'backToWelcome');
+      const backToWelcomeSpy = vi.spyOn(igsMeldungService, 'backToWelcome');
 
       component.backToWelcome();
 

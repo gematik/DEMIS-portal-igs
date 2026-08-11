@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { HttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { MockBuilder } from 'ng-mocks';
@@ -126,14 +127,14 @@ const mockResponse = {
 
 describe('MeldungSubmitService', () => {
   let service: MeldungSubmitService;
-  let httpPostSpy: jasmine.Spy;
+  let httpPostSpy: Mock;
 
   beforeEach(() => MockBuilder(MeldungSubmitService).mock(NGXLogger).mock(HttpClient).provide(ConfigService));
 
   beforeEach(() => {
     service = TestBed.inject(MeldungSubmitService);
-    spyOnProperty(TestBed.inject(ConfigService), 'igsGatewayUrl', 'get').and.returnValue('http://mocked-url.com');
-    httpPostSpy = spyOn(TestBed.inject(HttpClient), 'post');
+    vi.spyOn(TestBed.inject(ConfigService), 'igsGatewayUrl', 'get').mockReturnValue('http://mocked-url.com');
+    httpPostSpy = vi.spyOn(TestBed.inject(HttpClient), 'post');
   });
 
   it('should be created', () => {
@@ -141,7 +142,7 @@ describe('MeldungSubmitService', () => {
   });
 
   it('should submit a Meldung', async () => {
-    httpPostSpy.and.returnValue(of(mockResponse));
+    httpPostSpy.mockReturnValue(of(mockResponse));
     const response = await firstValueFrom(service.submitMeldung({ metadata: mockOverviewData }));
 
     expect(response).toEqual({
@@ -153,10 +154,10 @@ describe('MeldungSubmitService', () => {
 
   it('should indicate an error', async () => {
     const error = new Error('something went wrong');
-    httpPostSpy.and.returnValue(throwError(() => error));
-    const errorLoggerSpy = spyOn(TestBed.inject(NGXLogger), 'error');
+    httpPostSpy.mockReturnValue(throwError(() => error));
+    const errorLoggerSpy = vi.spyOn(TestBed.inject(NGXLogger), 'error');
 
-    await expectAsync(firstValueFrom(service.submitMeldung({ metadata: mockOverviewData }))).toBeRejectedWithError(error.message);
+    await expect(firstValueFrom(service.submitMeldung({ metadata: mockOverviewData }))).rejects.toThrowError(error.message);
     expect(errorLoggerSpy).toHaveBeenCalledWith('submitMeldung failed', error);
   });
 });

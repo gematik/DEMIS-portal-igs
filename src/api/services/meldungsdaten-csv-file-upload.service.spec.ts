@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { HttpClient } from '@angular/common/http';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -43,7 +44,7 @@ describe('MeldungsdatenCsvFileUploadService', () => {
       progress: 100,
       payload: igsBatchFastqTestdata,
     };
-    const postSpy = spyOn(httpClient, 'request').and.returnValue(fromSimulatedUploadProgess(1, igsBatchFastqTestdata).pipe(toSimulatedUpload(0)));
+    const postSpy = vi.spyOn(httpClient, 'request').mockReturnValue(fromSimulatedUploadProgess(1, igsBatchFastqTestdata).pipe(toSimulatedUpload(0)));
 
     const response = await lastValueFrom(service.uploadMeldungsdatenCsvFile(file));
     expect(response).toEqual(mockResponse);
@@ -63,7 +64,7 @@ describe('MeldungsdatenCsvFileUploadService', () => {
 
     // const response = await lastValueFrom(service.uploadMeldungsdatenCsvFile(file));
     // console.log(response);
-    await expectAsync(lastValueFrom(service.uploadMeldungsdatenCsvFile(file))).toBeRejectedWith({
+    await expect(lastValueFrom(service.uploadMeldungsdatenCsvFile(file))).rejects.toEqual({
       progress: 100,
       error: 'URL des IGS Gateways ist nicht gesetzt',
     });

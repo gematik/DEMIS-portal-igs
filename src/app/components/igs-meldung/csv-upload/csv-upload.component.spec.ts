@@ -15,6 +15,7 @@
     find details in the "Readme" file.
  */
 
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { By } from '@angular/platform-browser';
 import { MessageDialogService, StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
@@ -60,18 +61,18 @@ describe('CsvUploadComponent', () => {
   });
 
   it('should initialize uploading$ as false', () => {
-    expect(component.uploading$.value).toBeFalse();
+    expect(component.uploading$.value).toBe(false);
   });
 
   it('should call IgsMeldungService onFileDeleted', () => {
-    const clearCsvFileSpy = spyOn(fixture.point.injector.get(IgsMeldungService), 'clearCsvFile');
+    const clearCsvFileSpy = vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'clearCsvFile');
     component.onFileDeleted();
     expect(clearCsvFileSpy).toHaveBeenCalled();
   });
 
   // useCsvFile
   it('should call IgsMeldungService useCsvFile for the first file in the FileList', () => {
-    const useCsvFileSpy = spyOn(fixture.point.injector.get(IgsMeldungService), 'useCsvFile');
+    const useCsvFileSpy = vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'useCsvFile');
     const fileList = mockFileList(['test1.csv', 'test2.csv']);
     component.onFilesSelected(fileList);
     expect(useCsvFileSpy).toHaveBeenCalledTimes(1);
@@ -79,13 +80,13 @@ describe('CsvUploadComponent', () => {
   });
 
   it('should not call IgsMeldungService useCsvFile if FileList is null', () => {
-    const useCsvFileSpy = spyOn(fixture.point.injector.get(IgsMeldungService), 'useCsvFile');
+    const useCsvFileSpy = vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'useCsvFile');
     component.onFilesSelected(null);
     expect(useCsvFileSpy).not.toHaveBeenCalled();
   });
 
   it('should not call IgsMeldungService useCsvFile if FileList is empty', () => {
-    const useCsvFileSpy = spyOn(fixture.point.injector.get(IgsMeldungService), 'useCsvFile');
+    const useCsvFileSpy = vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'useCsvFile');
     const fileList = mockFileList([]);
     component.onFilesSelected(fileList);
     expect(useCsvFileSpy).not.toHaveBeenCalled();
@@ -93,34 +94,34 @@ describe('CsvUploadComponent', () => {
 
   // onUseFile
   it('should call MeldungsdatenCsvFileUploadService uploadCsvFile with the provided csvFile', () => {
-    const uploadCsvFileSpy = spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').and.returnValue(
-      fromSimulatedUploadProgess(1, igsBatchFastqTestdata).pipe(toSimulatedUpload(0), toFileUploadInfo())
-    );
+    const uploadCsvFileSpy = vi
+      .spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile')
+      .mockReturnValue(fromSimulatedUploadProgess(1, igsBatchFastqTestdata).pipe(toSimulatedUpload(0), toFileUploadInfo()));
     const csvFile = new File(['test'], 'test.csv', { type: 'text/csv' });
     component.onUseFile(csvFile);
     expect(uploadCsvFileSpy).toHaveBeenCalledWith(csvFile);
   });
 
   it('should set uploading$ to true while uploading the csv file', () => {
-    const uploadCsvFileSpy = spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').and.returnValue(
-      of({ progress: 50 } as UploadProgress<IgsMeldung.OverviewResponse>)
-    );
+    const uploadCsvFileSpy = vi
+      .spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile')
+      .mockReturnValue(of({ progress: 50 } as UploadProgress<IgsMeldung.OverviewResponse>));
     const csvFile = new File(['test'], 'test.csv', { type: 'text/csv' });
     component.onUseFile(csvFile);
-    expect(component.uploading$.value).toBeTrue();
+    expect(component.uploading$.value).toBe(true);
   });
 
   it('should set uploading$ to false after successfully uploading the csv file', () => {
-    const uploadCsvFileSpy = spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').and.returnValue(
-      of({ progress: 100, payload: igsBatchFastqTestdata } as UploadProgress<IgsMeldung.OverviewResponse>)
-    );
+    const uploadCsvFileSpy = vi
+      .spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile')
+      .mockReturnValue(of({ progress: 100, payload: igsBatchFastqTestdata } as UploadProgress<IgsMeldung.OverviewResponse>));
     const csvFile = new File(['test'], 'test.csv', { type: 'text/csv' });
     component.onUseFile(csvFile);
-    expect(component.uploading$.value).toBeFalse();
+    expect(component.uploading$.value).toBe(false);
   });
 
   it('should set uploading$ to false if there is an error while uploading the csv file', () => {
-    const uploadCsvFileSpy = spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').and.returnValue(
+    const uploadCsvFileSpy = vi.spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').mockReturnValue(
       throwError(
         () =>
           ({
@@ -131,37 +132,37 @@ describe('CsvUploadComponent', () => {
     );
     const csvFile = new File(['test'], 'test.csv', { type: 'text/csv' });
     component.onUseFile(csvFile);
-    expect(component.uploading$.value).toBeFalse();
+    expect(component.uploading$.value).toBe(false);
   });
 
   it('should not display button last-results before uploading a CSV file when there are no last results in local storage', () => {
-    spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').and.returnValue(false);
+    vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').mockReturnValue(false);
     // Test the method directly without triggering change detection
     const result = component.showProceedToLastResults();
-    expect(result).toBeFalse();
+    expect(result).toBe(false);
   });
 
   it('should display button last-results before selecting a CSV file when there are last results in local storage', () => {
-    spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').and.returnValue(true);
+    vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').mockReturnValue(true);
     // Test the method directly without triggering change detection
     const result = component.showProceedToLastResults();
-    expect(result).toBeTrue();
+    expect(result).toBe(true);
   });
 
   it('should return false when no last results are available', () => {
-    spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').and.returnValue(false);
+    vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').mockReturnValue(false);
     let showResults = component.showProceedToLastResults();
-    expect(showResults).toBeFalse();
+    expect(showResults).toBe(false);
   });
 
   it('should return true when last results are available', () => {
-    spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').and.returnValue(true);
+    vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'lastResultsAvailable').mockReturnValue(true);
     let showResults = component.showProceedToLastResults();
-    expect(showResults).toBeTrue();
+    expect(showResults).toBe(true);
   });
 
   it('should call proceedToResultStep', () => {
-    const igsMeldungServiceSpy = spyOn(fixture.point.injector.get(IgsMeldungService), 'proceedToResultStep');
+    const igsMeldungServiceSpy = vi.spyOn(fixture.point.injector.get(IgsMeldungService), 'proceedToResultStep');
     component.navigateToLastResults();
     expect(igsMeldungServiceSpy).toHaveBeenCalledTimes(1);
   });
@@ -173,14 +174,14 @@ describe('CsvUploadComponent', () => {
     beforeEach(() => {
       configService = fixture.point.injector.get(ConfigService);
       igsMeldungService = fixture.point.injector.get(IgsMeldungService);
-      spyOn(configService, 'isFeatureEnabled').and.returnValue(true);
+      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
     });
 
     it('should call stepNavigationService.next() after successful upload', () => {
-      const stepNavigationService = { next: jasmine.createSpy('next') };
+      const stepNavigationService = { next: vi.fn() };
       (component as any).stepNavigationService = stepNavigationService;
 
-      spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').and.returnValue(
+      vi.spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').mockReturnValue(
         of({ progress: 100, payload: igsBatchFastqTestdata } as UploadProgress<IgsMeldung.OverviewResponse>)
       );
 
@@ -191,10 +192,10 @@ describe('CsvUploadComponent', () => {
     });
 
     it('should not call stepNavigationService.next() when upload is not complete', () => {
-      const stepNavigationService = { next: jasmine.createSpy('next') };
+      const stepNavigationService = { next: vi.fn() };
       (component as any).stepNavigationService = stepNavigationService;
 
-      spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').and.returnValue(
+      vi.spyOn(fixture.point.injector.get(MeldungsdatenCsvFileUploadService), 'uploadMeldungsdatenCsvFile').mockReturnValue(
         of({ progress: 50 } as UploadProgress<IgsMeldung.OverviewResponse>)
       );
 
@@ -205,21 +206,21 @@ describe('CsvUploadComponent', () => {
     });
 
     it('should call stepNavigationService.goToStepByKey() when navigating to last results', () => {
-      const stepNavigationService = { goToStepByKey: jasmine.createSpy('goToStepByKey') };
+      const stepNavigationService = { goToStepByKey: vi.fn() };
       (component as any).stepNavigationService = stepNavigationService;
 
       // Mock processSteps since IgsMeldungService is mocked
       (igsMeldungService as any).processSteps = [
-        { key: 'csv-upload', control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') } },
+        { key: 'csv-upload', control: { enable: vi.fn(), disable: vi.fn() } },
         {
           key: 'sequence-selection',
-          control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+          control: { enable: vi.fn(), disable: vi.fn() },
         },
         {
           key: 'upload-status',
-          control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+          control: { enable: vi.fn(), disable: vi.fn() },
         },
-        { key: 'result', control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') } },
+        { key: 'result', control: { enable: vi.fn(), disable: vi.fn() } },
       ];
 
       component.navigateToLastResults();
@@ -228,21 +229,21 @@ describe('CsvUploadComponent', () => {
     });
 
     it('should enable and then selectively disable processSteps when navigating to last results', () => {
-      const stepNavigationService = { goToStepByKey: jasmine.createSpy('goToStepByKey') };
+      const stepNavigationService = { goToStepByKey: vi.fn() };
       (component as any).stepNavigationService = stepNavigationService;
 
       // Mock processSteps
       const mockSteps = [
-        { key: 'csv-upload', control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') } },
+        { key: 'csv-upload', control: { enable: vi.fn(), disable: vi.fn() } },
         {
           key: 'sequence-selection',
-          control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+          control: { enable: vi.fn(), disable: vi.fn() },
         },
         {
           key: 'upload-status',
-          control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+          control: { enable: vi.fn(), disable: vi.fn() },
         },
-        { key: 'result', control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') } },
+        { key: 'result', control: { enable: vi.fn(), disable: vi.fn() } },
       ];
       (igsMeldungService as any).processSteps = mockSteps;
 
@@ -262,23 +263,23 @@ describe('CsvUploadComponent', () => {
     });
 
     it('should not disable the result step when navigating to last results', () => {
-      const stepNavigationService = { goToStepByKey: jasmine.createSpy('goToStepByKey') };
+      const stepNavigationService = { goToStepByKey: vi.fn() };
       (component as any).stepNavigationService = stepNavigationService;
 
       // Mock processSteps
       const resultStep = {
         key: 'result',
-        control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+        control: { enable: vi.fn(), disable: vi.fn() },
       };
       const mockSteps = [
-        { key: 'csv-upload', control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') } },
+        { key: 'csv-upload', control: { enable: vi.fn(), disable: vi.fn() } },
         {
           key: 'sequence-selection',
-          control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+          control: { enable: vi.fn(), disable: vi.fn() },
         },
         {
           key: 'upload-status',
-          control: { enable: jasmine.createSpy('enable'), disable: jasmine.createSpy('disable') },
+          control: { enable: vi.fn(), disable: vi.fn() },
         },
         resultStep,
       ];

@@ -18,7 +18,7 @@
 import { Component, inject } from '@angular/core';
 import { IgsMeldungService } from './igs-meldung.service';
 import { ConfigService } from '../../config.service';
-import { MaxHeightContentContainerComponent, TiledContentComponent, ProcessStepperComponent, FormsFooterComponent } from '@gematik/demis-portal-core-library';
+import { FormsFooterComponent, MaxHeightContentContainerComponent, ProcessStepperComponent, TiledContentComponent } from '@gematik/demis-portal-core-library';
 import { CsvUploadComponent } from './csv-upload/csv-upload.component';
 import { SequenceSelectionComponent } from './sequence-selection/sequence-selection.component';
 import { UploadStatusComponent } from './upload-status/upload-status.component';
@@ -32,8 +32,9 @@ import { AsyncPipe } from '@angular/common';
   imports: [
     MaxHeightContentContainerComponent,
     TiledContentComponent,
-    ProcessStepperComponent,
     FormsFooterComponent,
+    // sonarjs/no-deprecated: off
+    ProcessStepperComponent,
     CsvUploadComponent,
     SequenceSelectionComponent,
     UploadStatusComponent,
@@ -44,14 +45,6 @@ import { AsyncPipe } from '@angular/common';
 export class IgsMeldungComponent {
   readonly igsMeldungSrv = inject(IgsMeldungService);
   readonly config = inject(ConfigService);
-
-  get FEATURE_FLAG_PORTAL_HEADER_FOOTER(): boolean {
-    return this.config.isFeatureEnabled('FEATURE_FLAG_PORTAL_HEADER_FOOTER');
-  }
-
-  get FEATURE_FLAG_PORTAL_ACCESSIBILITY(): boolean {
-    return this.config.isFeatureEnabled('FEATURE_FLAG_PORTAL_ACCESSIBILITY');
-  }
 
   get FEATURE_FLAG_FOOTER_LINKS_CORRECTION(): boolean {
     return this.config.isFeatureEnabled('FEATURE_FLAG_FOOTER_LINKS_CORRECTION');
