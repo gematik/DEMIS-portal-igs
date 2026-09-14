@@ -2,6 +2,10 @@
 
 # Release portal-igs
 
+## Release 1.4.5
+- Changed default parameter igsServiceUrl, now without version endpoint
+- Updated @gematik/demis-portal-core-library to 4.3.0
+
 ## Release 1.4.4
 
 - Removed feature flag FEATURE_FLAG_PORTAL_HEADER_FOOTER: forms footer is now always rendered

@@ -1,6 +1,6 @@
 {
   "name": "portal-igs",
-  "version": "1.4.4-snapshot",
+  "version": "1.4.5-snapshot",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4204",
@@ -28,7 +28,7 @@
     "@angular/material-date-fns-adapter": "21.2.14",
     "@angular/platform-browser": "21.2.19",
     "@angular/router": "21.2.19",
-    "@gematik/demis-portal-core-library": "4.2.10",
+    "@gematik/demis-portal-core-library": "4.3.0",
     "@ngx-formly/core": "7.1.0",
     "@ngx-formly/material": "7.1.0",
     "date-fns": "4.4.0",
@@ -67,7 +67,7 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-prettier": "5.5.5",
     "ng-mocks": "14.15.3",
-    "playwright": "1.61.1",
+    "playwright": "1.62.1",
     "prettier": "3.8.1",
     "rimraf": "6.1.3",
     "style-loader": "3.3.4",

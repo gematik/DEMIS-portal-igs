@@ -90,6 +90,7 @@ describe('IgsMeldungService', () => {
   afterEach(() => {
     // Clean up localStorage to ensure test isolation
     localStorage.clear();
+    vi.useRealTimers();
   });
 
   it('should be created', () => {
@@ -307,10 +308,9 @@ describe('IgsMeldungService', () => {
   it('should proceed to the next step if notifications are uploaded', async () => {
     const uploadTimestamps: string[] = [];
     const demisSequenceIds: string[] = [];
-    vi.spyOn(Date.prototype, 'toISOString').mockImplementation(() => {
-      uploadTimestamps.push(new Date().toLocaleString());
-      return uploadTimestamps[uploadTimestamps.length - 1];
-    });
+    vi.useFakeTimers();
+    const initialUploadTime = new Date('2026-08-22T06:45:00.000Z');
+    vi.setSystemTime(initialUploadTime);
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
         sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
@@ -329,6 +329,7 @@ describe('IgsMeldungService', () => {
       Promise.resolve({ documentReferenceId: 'docref-id', status: 'VALID', message: 'string' })
     );
     vi.spyOn(TestBed.inject(MeldungSubmitService), 'submitMeldung').mockImplementation(() => {
+      vi.setSystemTime(new Date(initialUploadTime.getTime() + uploadTimestamps.length * 1000));
       uploadTimestamps.push(new Date().toISOString());
       demisSequenceIds.push(`IGS-${10000 + Math.floor(Math.random() * 89999)}-PLAP-${crypto.randomUUID()}`);
       return of({
