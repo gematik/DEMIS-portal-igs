@@ -117,7 +117,7 @@ istio:
 config:
   mfIgs:
     igsGatewayUrl: /gateway/igs
-    igsServiceUrl: /surveillance/notification-sequence/v5/fhir
+    igsServiceUrl: /surveillance/notification-sequence
     maxRetry: 60
   featureFlags:
     FEATURE_FLAG_PORTAL_IGS_SIDENAV: false
