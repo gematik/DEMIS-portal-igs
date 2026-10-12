@@ -195,10 +195,10 @@ export const igsBatchFastqSequenzdateienSelectOverview: IgsMeldung.Sequenzdateie
 ];
 
 export const uploadSequenceFileParams: UploadSequenceFileParams = {
-  sequenceUploadUrl: 'https://someUploadUrl',
   file: new File(['dummy content'], 'example.txt', {
     type: 'text/plain',
   }),
+  documentReference: 'https://storage.igs.org/files/SomeReferenceId',
   documentReferenceId: 'SomeReferenceId',
 };
 

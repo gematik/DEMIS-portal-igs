@@ -22,6 +22,7 @@ import { MockBuilder } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, firstValueFrom, of, throwError } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
+import { FhirValidationResponseService } from 'src/api/services/fhir-validation-response.service';
 import { MeldungSubmitResponse, MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { ChunkUploadResponse, SequenceUploadService, UploadProcessInfo } from 'src/api/services/sequence-upload.service';
 
@@ -75,6 +76,7 @@ describe('IgsMeldungService', () => {
 
   beforeEach(() =>
     MockBuilder([IgsMeldungService])
+      .keep(FhirValidationResponseService)
       .mock(LoggerModule)
       .mock(NGXLogger)
       .mock(FileSizePipe)
@@ -313,8 +315,7 @@ describe('IgsMeldungService', () => {
     vi.setSystemTime(initialUploadTime);
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -410,7 +411,7 @@ describe('IgsMeldungService', () => {
 
   it('should not proceed if results are shown', async () => {
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
-      of({ sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}` } as CreateDocumentReferenceResponse)
+      of({ documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127' } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'uploadSequenceFileChunk').mockReturnValue(
       Promise.resolve({ partNumber: 1, eTag: 'etag-value' } as ChunkUploadResponse)
@@ -495,8 +496,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockImplementation(() => {
@@ -549,8 +549,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -606,8 +605,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -666,8 +664,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -727,8 +724,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -789,8 +785,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -847,8 +842,7 @@ describe('IgsMeldungService', () => {
     });
     vi.spyOn(TestBed.inject(DocumentReferenceService), 'createDocumentReference').mockReturnValue(
       of({
-        sequenceUploadUrl: `https://igs.gateway/sequence-upload?fileRef=${Math.floor(Math.random() * 100000000)}`,
-        documentReferenceId: 'docref-id',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(TestBed.inject(SequenceUploadService), 'getFileUploadInfo').mockReturnValue(
@@ -968,7 +962,7 @@ describe('IgsMeldungService', () => {
     const documentReferenceService = TestBed.inject(DocumentReferenceService);
     const sequenceUploadService = TestBed.inject(SequenceUploadService);
     vi.spyOn(documentReferenceService, 'createDocumentReference').mockReturnValue(
-      of({ sequenceUploadUrl: 'https://upload-url', documentReferenceId: 'docref-id' } as CreateDocumentReferenceResponse)
+      of({ documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127' } as CreateDocumentReferenceResponse)
     );
     vi.spyOn(sequenceUploadService, 'getFileUploadInfo').mockReturnValue(of(uploadProcessInfo[0]));
     const initValidationSpy = vi.spyOn(sequenceUploadService, 'initValidation');
@@ -997,6 +991,27 @@ describe('IgsMeldungService', () => {
     await service['submitNotification'](igsBatchFastqTestdata.items[0].data, [uploadSequenceFileParams]);
 
     expect(submitMeldungSpy).not.toHaveBeenCalled();
+  });
+
+  it('should submit the returned document references', async () => {
+    const meldungSubmitService = TestBed.inject(MeldungSubmitService);
+    const submitMeldungSpy = vi.spyOn(meldungSubmitService, 'submitMeldung').mockReturnValue(of({ igsId: 'sequence-id' }));
+    const notification = igsBatchFastqTestdata.items[0].data;
+    const fileOneDocumentReference = 'https://storage.igs.org/files/file-one';
+    const fileTwoDocumentReference = 'https://storage.igs.org/files/file-two';
+    service['uploadCanceled$'].next(false);
+
+    await service['submitNotification'](notification, [
+      { ...uploadSequenceFileParams, file: { name: notification.fileOneName } as File, documentReference: fileOneDocumentReference },
+      { ...uploadSequenceFileParams, file: { name: notification.fileTwoName } as File, documentReference: fileTwoDocumentReference },
+    ]);
+
+    expect(submitMeldungSpy).toHaveBeenCalledWith({
+      metadata: expect.objectContaining({
+        fileOneDocumentReference,
+        fileTwoDocumentReference,
+      }),
+    });
   });
 
   it('should initialize local storage correctly when proceeding to results', () => {
