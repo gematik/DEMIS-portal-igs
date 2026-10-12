@@ -2,6 +2,11 @@
 
 # Release portal-igs
 
+## Release 1.4.6
+- Updated minor/patch versions of dependencies
+- Updated @gematik/demis-portal-core-library to 4.4.6 incl. a11y improvements for dialogs
+- save documentReference url instead of parsing only the uuid
+
 ## Release 1.4.5
 - Changed default parameter igsServiceUrl, now without version endpoint
 - Updated @gematik/demis-portal-core-library to 4.3.0

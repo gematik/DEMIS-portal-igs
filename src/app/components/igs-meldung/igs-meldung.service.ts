@@ -28,6 +28,7 @@ import { ChunkUploadResponse, SequenceUploadService, UploadSequenceFileChunkPara
 import { UploadProgress } from 'src/shared/shared-functions';
 import { IgsMeldung } from './igs-meldung.types';
 import { ConfigService } from 'src/app/config.service';
+import { validate as isValidUuid } from 'uuid';
 
 export enum IgsLocalStorageKeys {
   FILE_UPLOADS = 'IGS_FILE_UPLOADS',
@@ -403,8 +404,8 @@ export class IgsMeldungService {
         this.documentReferenceService.createDocumentReference({ fileHash }).pipe(
           map((createDocumentReferenceResponse: CreateDocumentReferenceResponse) => ({
             file: sequenceFile,
-            sequenceUploadUrl: createDocumentReferenceResponse.sequenceUploadUrl,
-            documentReferenceId: createDocumentReferenceResponse.documentReferenceId,
+            documentReference: createDocumentReferenceResponse.documentReference,
+            documentReferenceId: new URL(createDocumentReferenceResponse.documentReference).pathname.split('/').find(pathSegment => isValidUuid(pathSegment)),
           }))
         )
       );
@@ -478,7 +479,6 @@ export class IgsMeldungService {
         }
 
         let uploadSequenceFileParams = {
-          sequenceUploadUrl: '',
           file: sequenceUploadInfo.file,
           documentReferenceId: undefined,
         } as UploadSequenceFileParams;
@@ -624,8 +624,8 @@ export class IgsMeldungService {
           .submitMeldung({
             metadata: {
               ...notification,
-              fileOneDocumentReference: uploadSequenceFileParamsList.find(p => p.file.name === notification.fileOneName)?.documentReferenceId,
-              fileTwoDocumentReference: uploadSequenceFileParamsList.find(p => p.file.name === notification.fileTwoName)?.documentReferenceId,
+              fileOneDocumentReference: uploadSequenceFileParamsList.find(p => p.file.name === notification.fileOneName)?.documentReference,
+              fileTwoDocumentReference: uploadSequenceFileParamsList.find(p => p.file.name === notification.fileTwoName)?.documentReference,
             },
           })
           .pipe(map(response => response.igsId))

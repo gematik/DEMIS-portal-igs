@@ -91,8 +91,6 @@ describe('Igs - Integration Tests (with FEATURE_FLAG_PORTAL_IGS_SIDENAV)', () =>
     return [];
   };
 
-  let documentReferenceCounter = 1;
-
   const spies = {
     uploadMeldungsdatenCsvFile: vi.fn().mockReturnValue(
       of({
@@ -102,8 +100,7 @@ describe('Igs - Integration Tests (with FEATURE_FLAG_PORTAL_IGS_SIDENAV)', () =>
     ),
     createDocumentReference: vi.fn().mockReturnValue(
       of({
-        documentReferenceId: `DR4711-${documentReferenceCounter++}`,
-        sequenceUploadUrl: 'http://upload-to-this.url',
+        documentReference: 'https://igs.gateway/document-reference/22591739-d7f4-4775-9c27-e336b3507127',
       } as CreateDocumentReferenceResponse)
     ),
     getFileUploadInfo: vi.fn().mockReturnValue(

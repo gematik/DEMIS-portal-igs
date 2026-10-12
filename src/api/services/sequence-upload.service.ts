@@ -23,8 +23,8 @@ import { NGXLogger } from 'ngx-logger';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
 
 export type UploadSequenceFileParams = {
-  sequenceUploadUrl: string;
   file: File;
+  documentReference: string;
   documentReferenceId: string | undefined;
 };
 

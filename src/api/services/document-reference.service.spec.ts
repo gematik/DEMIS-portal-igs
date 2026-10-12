@@ -53,9 +53,9 @@ describe('DocumentReferenceService', () => {
     const props: CreateDocumentReferenceRequestProps = { fileHash: '9770fded7efdfba62961d078158441089aa98fd3b42ad49766a72d479c58996f' };
     const documentReferenceId = '22591739-d7f4-4775-9c27-e336b3507127';
     const mockedApiResponse: CreateDocumentReferenceApiResponse = {
-      sequenceUploadUrl: 'https://storage.igs.org/files/' + documentReferenceId,
-    } as CreateDocumentReferenceApiResponse;
-    const expectedResponse: CreateDocumentReferenceResponse = { ...mockedApiResponse, documentReferenceId };
+      documentReference: 'https://storage.igs.org/files/' + documentReferenceId,
+    };
+    const expectedResponse: CreateDocumentReferenceResponse = { ...mockedApiResponse, documentReference: mockedApiResponse.documentReference };
 
     vi.spyOn(httpClient, 'post').mockReturnValue(of(mockedApiResponse));
 

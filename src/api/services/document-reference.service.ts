@@ -19,13 +19,12 @@ import { map, Observable } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ConfigService } from '../../app/config.service';
-import { validate as isValidUuid } from 'uuid';
 
 export type CreateDocumentReferenceRequestProps = { fileHash: string };
-export type CreateDocumentReferenceApiResponse = { sequenceUploadUrl: string };
+export type CreateDocumentReferenceApiResponse = { documentReference: string };
 
 export type CreateDocumentReferenceResponse = CreateDocumentReferenceApiResponse & {
-  documentReferenceId: string | undefined;
+  documentReference: string | undefined;
 };
 
 @Injectable({
@@ -40,7 +39,7 @@ export class DocumentReferenceService {
     return this.http.post<CreateDocumentReferenceApiResponse>(url, {}).pipe(
       map(apiResponse => ({
         ...apiResponse,
-        documentReferenceId: new URL(apiResponse.sequenceUploadUrl).pathname.split('/').find(pathSegment => isValidUuid(pathSegment)),
+        documentReference: apiResponse?.documentReference,
       }))
     );
   }

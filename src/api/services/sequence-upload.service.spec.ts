@@ -95,6 +95,7 @@ describe('SequenceUploadService', () => {
   });
 
   it('should return validation result when status is VALID', async () => {
+    vi.spyOn(configService, 'maxAttempts', 'get').mockReturnValue(1);
     vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.resolve());
     vi.spyOn(service as any, 'getValidationStatus').mockReturnValue(Promise.resolve({ status: 'VALID' }));
 
@@ -104,6 +105,7 @@ describe('SequenceUploadService', () => {
   });
 
   it('should return validation result when status is VALIDATION_FAILED', async () => {
+    vi.spyOn(configService, 'maxAttempts', 'get').mockReturnValue(1);
     vi.spyOn(service as any, 'initValidation').mockReturnValue(Promise.resolve());
     vi.spyOn(service as any, 'getValidationStatus').mockReturnValue(Promise.resolve({ status: 'VALIDATION_FAILED' }));
 
