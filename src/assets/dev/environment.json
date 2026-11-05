@@ -5,13 +5,10 @@
     "maxRetry": 40
   },
   "featureFlags": {
-    "FEATURE_FLAG_NEW_API_ENDPOINTS": false,
-    "FEATURE_FLAG_PORTAL_IGS_SIDENAV": true,
-    "FEATURE_FLAG_FOOTER_LINKS_CORRECTION": true
+    "FEATURE_FLAG_NEW_API_ENDPOINTS": false
   },
   "ngxLoggerConfig": {
     "level": 1,
     "disableConsoleLogging": false
   }
 }
-

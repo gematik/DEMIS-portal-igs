@@ -40,7 +40,6 @@ import {
 } from '@gematik/demis-portal-core-library';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
-import { ConfigService } from '../../../config.service';
 import { MatIcon } from '@angular/material/icon';
 import { NgTemplateOutlet, AsyncPipe, DatePipe } from '@angular/common';
 import { MatButton } from '@angular/material/button';
@@ -73,17 +72,10 @@ import { MatButton } from '@angular/material/button';
 })
 export class SequenceSelectionComponent extends StepContentComponent<void> implements OnInit {
   igsMeldungService = inject(IgsMeldungService);
-  private readonly configService = inject(ConfigService);
   private readonly stepNavigationService = inject(StepNavigation);
 
-  get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
-    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
-  }
-
   ngOnInit(): void {
-    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.igsMeldungService.processSteps[0].control.disable();
-    }
+    this.igsMeldungService.processSteps[0].control.disable();
   }
 
   toDataSource(overviewData: IgsMeldung.SequenzdateienSelectOverview[]): MatTableDataSource<IgsMeldung.SequenzdateienSelectOverview, MatPaginator> {
@@ -98,9 +90,7 @@ export class SequenceSelectionComponent extends StepContentComponent<void> imple
 
   proceed() {
     this.igsMeldungService.proceed();
-    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.stepNavigationService.next();
-    }
+    this.stepNavigationService.next();
   }
 
   backToWelcome() {

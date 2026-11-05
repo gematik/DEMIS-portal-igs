@@ -27,7 +27,6 @@ import { ExportToFileService } from 'src/api/services/export-to-file.service';
 import { NgTemplateOutlet } from '@angular/common';
 
 import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from 'src/app/components/igs-meldung/igs-meldung.service';
-import { ConfigService } from 'src/app/config.service';
 import { IgsMeldung } from '../igs-meldung.types';
 import { ResultComponent } from './result.component';
 
@@ -35,7 +34,7 @@ declare type IndexAccessible = Record<string, unknown>;
 
 describe('ResultComponent', () => {
   let component: ResultComponent;
-  let fixture: MockedComponentFixture<ResultComponent, ResultComponent>;
+  let fixture: MockedComponentFixture<ResultComponent, any>;
   const downloadTimestamp = new Date();
 
   const mockErrors = [
@@ -149,11 +148,8 @@ describe('ResultComponent', () => {
   });
 
   it('should have a download button with correct filename attibute', () => {
-    fixture.detectChanges();
-    const downloadButton = fixture.debugElement.nativeElement.querySelector('button#btn-report-download');
-    expect(downloadButton).toBeTruthy();
     const expectedFilename = 'igs-meldung-report__' + downloadTimestamp.toISOString().replace(/:/g, '-');
-    expect(downloadButton.getAttribute('demis-igs-filename')).toBe(expectedFilename);
+    expect(component.resultReportFilename).toBe(expectedFilename);
   });
 
   it('should download report', () => {
@@ -200,27 +196,16 @@ describe('ResultComponent', () => {
     expect(exportToFileService.exportToCsvFile).toHaveBeenCalledWith(expectedReportFilename, expectedExportableNotificationUploadInfo);
   });
 
-  describe('with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
-    let configService: ConfigService;
-    let igsMeldungService: IgsMeldungService;
+  it('should disable processSteps[2] in ngOnInit', () => {
+    component.ngOnInit();
+    expect(component.igsMeldungService.processSteps[2].control.disabled).toBe(true);
+  });
 
-    beforeEach(() => {
-      configService = TestBed.inject(ConfigService);
-      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
-      igsMeldungService = TestBed.inject(IgsMeldungService);
-    });
+  it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
+    const backToWelcomeSpy = vi.spyOn(component.igsMeldungService, 'backToWelcome');
 
-    it('should disable processSteps[2] in ngOnInit', () => {
-      component.ngOnInit();
-      expect(igsMeldungService.processSteps[2].control.disabled).toBe(true);
-    });
+    component.backToWelcome();
 
-    it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
-      const backToWelcomeSpy = vi.spyOn(igsMeldungService, 'backToWelcome');
-
-      component.backToWelcome();
-
-      expect(backToWelcomeSpy).toHaveBeenCalled();
-    });
+    expect(backToWelcomeSpy).toHaveBeenCalled();
   });
 });

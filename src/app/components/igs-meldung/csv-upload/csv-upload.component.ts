@@ -31,7 +31,6 @@ import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { MeldungsdatenCsvFileUploadService } from 'src/api/services/meldungsdaten-csv-file-upload.service';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
-import { ConfigService } from '../../../config.service';
 import { MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { NgTemplateOutlet, AsyncPipe } from '@angular/common';
@@ -58,12 +57,7 @@ export class CsvUploadComponent extends StepContentComponent<void> implements On
   private readonly meldungsdatenCsvFileUploadSrv = inject(MeldungsdatenCsvFileUploadService);
   private readonly unsubscriber = new Subject<void>();
   private readonly messageDialogService = inject(MessageDialogService);
-  private readonly configService = inject(ConfigService);
   private readonly stepNavigationService = inject(StepNavigation);
-
-  get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
-    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
-  }
 
   ngOnDestroy(): void {
     this.unsubscriber.next();
@@ -93,9 +87,7 @@ export class CsvUploadComponent extends StepContentComponent<void> implements On
             this.igsMeldungSrv.useParsedCsvOverviewData(uploadData.payload as IgsMeldung.OverviewResponse);
             this.uploading$.next(false);
             this.igsMeldungSrv.proceed();
-            if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-              this.stepNavigationService.next();
-            }
+            this.stepNavigationService.next();
           }
         },
         error: errorData => {
@@ -126,16 +118,14 @@ export class CsvUploadComponent extends StepContentComponent<void> implements On
 
   navigateToLastResults() {
     this.igsMeldungSrv.proceedToResultStep();
-    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.igsMeldungSrv.processSteps.forEach(step => {
-        step.control.enable();
-      });
-      this.stepNavigationService.goToStepByKey('result');
-      this.igsMeldungSrv.processSteps.forEach(step => {
-        if (step.key !== 'result') {
-          step.control.disable();
-        }
-      });
-    }
+    this.igsMeldungSrv.processSteps.forEach(step => {
+      step.control.enable();
+    });
+    this.stepNavigationService.goToStepByKey('result');
+    this.igsMeldungSrv.processSteps.forEach(step => {
+      if (step.key !== 'result') {
+        step.control.disable();
+      }
+    });
   }
 }

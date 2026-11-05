@@ -57,7 +57,7 @@ export default defineConfig({
     },
     testTimeout: 10000,
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       exclude: ['src/api/**'],
       reporter: ['text', 'text-summary', 'html', 'lcov', 'cobertura'],
       reportsDirectory: './coverage',

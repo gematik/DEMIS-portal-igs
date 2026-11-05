@@ -18,24 +18,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { MockBuilder, MockRender } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 
 import { igsBatchFastqSequenzdateienSelectOverview } from '../igs-batch-fastq.testdata';
 import { UploadStatusComponent } from './upload-status.component';
 import { MessageDialogService, StepNavigation } from '@gematik/demis-portal-core-library';
 import { UploadError, IgsMeldungService } from '../igs-meldung.service';
-import { ConfigService } from 'src/app/config.service';
 
 describe('UploadStatus', () => {
-  let fixture: MockedComponentFixture<UploadStatusComponent, UploadStatusComponent>;
-  let component: UploadStatusComponent;
+  let fixture: any;
+  let component: any;
 
   beforeEach(() => MockBuilder([UploadStatusComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation));
 
   beforeEach(() => {
-    fixture = MockRender(UploadStatusComponent);
-    component = fixture.point.componentInstance;
+    const rendered = MockRender(UploadStatusComponent);
+    fixture = rendered;
+    component = rendered.point.componentInstance;
   });
 
   it('should create', () => {
@@ -74,50 +74,42 @@ describe('UploadStatus', () => {
     expect(spy).toHaveBeenCalledWith(expectedError);
   });
 
-  describe('with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
-    let configService: ConfigService;
-    let igsMeldungService: IgsMeldungService;
+  it('should disable processSteps[0] and processSteps[1] in ngOnInit', () => {
+    const igsMeldungService = TestBed.inject(IgsMeldungService);
+    vi.spyOn(igsMeldungService, 'uploadNotifications').mockReturnValue(Promise.resolve());
+    component.ngOnInit();
+    expect(igsMeldungService.processSteps[0].control.disabled).toBe(true);
+    expect(igsMeldungService.processSteps[1].control.disabled).toBe(true);
+    expect(igsMeldungService.uploadNotifications).toHaveBeenCalled();
+  });
 
-    beforeEach(() => {
-      configService = TestBed.inject(ConfigService);
-      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
-      igsMeldungService = TestBed.inject(IgsMeldungService);
-    });
+  it('should call stepNavigationService.next() in proceed', () => {
+    const igsMeldungService = TestBed.inject(IgsMeldungService);
+    vi.spyOn(igsMeldungService, 'proceed');
+    const mockStepNavigationService = { next: vi.fn() };
+    (component as any).stepNavigationService = mockStepNavigationService;
+    component.proceed();
+    expect(igsMeldungService.proceed).toHaveBeenCalled();
+    expect(mockStepNavigationService.next).toHaveBeenCalled();
+  });
 
-    it('should disable processSteps[0] and processSteps[1] in ngOnInit', () => {
-      vi.spyOn(igsMeldungService, 'uploadNotifications').mockReturnValue(Promise.resolve());
-      component.ngOnInit();
-      expect(igsMeldungService.processSteps[0].control.disabled).toBe(true);
-      expect(igsMeldungService.processSteps[1].control.disabled).toBe(true);
-      expect(igsMeldungService.uploadNotifications).toHaveBeenCalled();
-    });
-
-    it('should call stepNavigationService.next() in proceed', () => {
-      vi.spyOn(igsMeldungService, 'proceed');
-      const mockStepNavigationService = { next: vi.fn() };
-      (component as any).stepNavigationService = mockStepNavigationService;
-      component.proceed();
-      expect(igsMeldungService.proceed).toHaveBeenCalled();
-      expect(mockStepNavigationService.next).toHaveBeenCalled();
-    });
-
-    it('should call stepNavigationService.next() in cancel and update processSteps[2] and processSteps[3]', () => {
-      vi.spyOn(igsMeldungService, 'cancel');
-      const mockStepNavigationService = { next: vi.fn() };
-      (component as any).stepNavigationService = mockStepNavigationService;
-      const step2Control = igsMeldungService.processSteps[2].control;
-      const step3Control = igsMeldungService.processSteps[3].control;
-      vi.spyOn(step2Control, 'setValue');
-      vi.spyOn(step2Control, 'markAsTouched');
-      vi.spyOn(step2Control, 'updateValueAndValidity');
-      vi.spyOn(step3Control, 'enable');
-      component.cancel();
-      expect(igsMeldungService.cancel).toHaveBeenCalled();
-      expect(step2Control.setValue).toHaveBeenCalledWith(null);
-      expect(step2Control.markAsTouched).toHaveBeenCalled();
-      expect(step2Control.updateValueAndValidity).toHaveBeenCalled();
-      expect(step3Control.enable).toHaveBeenCalled();
-      expect(mockStepNavigationService.next).toHaveBeenCalled();
-    });
+  it('should call stepNavigationService.next() in cancel and update processSteps[2] and processSteps[3]', () => {
+    const igsMeldungService = TestBed.inject(IgsMeldungService);
+    vi.spyOn(igsMeldungService, 'cancel');
+    const mockStepNavigationService = { next: vi.fn() };
+    (component as any).stepNavigationService = mockStepNavigationService;
+    const step2Control = igsMeldungService.processSteps[2].control;
+    const step3Control = igsMeldungService.processSteps[3].control;
+    vi.spyOn(step2Control, 'setValue');
+    vi.spyOn(step2Control, 'markAsTouched');
+    vi.spyOn(step2Control, 'updateValueAndValidity');
+    vi.spyOn(step3Control, 'enable');
+    component.cancel();
+    expect(igsMeldungService.cancel).toHaveBeenCalled();
+    expect(step2Control.setValue).toHaveBeenCalledWith(null);
+    expect(step2Control.markAsTouched).toHaveBeenCalled();
+    expect(step2Control.updateValueAndValidity).toHaveBeenCalled();
+    expect(step3Control.enable).toHaveBeenCalled();
+    expect(mockStepNavigationService.next).toHaveBeenCalled();
   });
 });

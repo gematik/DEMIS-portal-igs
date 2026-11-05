@@ -18,7 +18,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { ErrorMessage, FileSizePipe, MessageDialogService, ProcessStep, Step, StepNavigation } from '@gematik/demis-portal-core-library';
+import { ErrorMessage, FileSizePipe, MessageDialogService, ProcessStep, StepNavigation } from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, lastValueFrom, map, Subject } from 'rxjs';
 import { CreateDocumentReferenceResponse, DocumentReferenceService } from 'src/api/services/document-reference.service';
@@ -27,7 +27,6 @@ import { MeldungSubmitService } from 'src/api/services/meldung-submit.service';
 import { ChunkUploadResponse, SequenceUploadService, UploadSequenceFileChunkParams, UploadSequenceFileParams } from 'src/api/services/sequence-upload.service';
 import { UploadProgress } from 'src/shared/shared-functions';
 import { IgsMeldung } from './igs-meldung.types';
-import { ConfigService } from 'src/app/config.service';
 import { validate as isValidUuid } from 'uuid';
 
 export enum IgsLocalStorageKeys {
@@ -89,20 +88,6 @@ function createProcessSteps(): ProcessStep[] {
   ];
 }
 
-/**
- * Derives legacy Step[] from ProcessStep[] for the deprecated stepper.
- */
-function deriveSteps(processSteps: ProcessStep[]): Step[] {
-  return processSteps.map(
-    (step, index) =>
-      ({
-        number: index + 1,
-        title: step.label,
-        description: step.description,
-      }) as Step
-  );
-}
-
 export const SEARCH_STRINGS = {
   profileValidation: 'Validierungsfehler Metadaten-Upload IGS',
   sequenceValidation: 'Validierungsfehler Sequenzdaten-Upload IGS',
@@ -125,11 +110,8 @@ export class IgsMeldungService {
   /** Fresh ProcessStep instances with own FormControls, created per service instance. */
   readonly processSteps: ProcessStep[] = createProcessSteps();
 
-  // remove this property when FEATURE_FLAG_PORTAL_IGS_SIDENAV is default enabled
-  readonly steps: Step[] = deriveSteps(this.processSteps);
-
   private readonly csvFileSub$ = new BehaviorSubject<File | null>(null);
-  private readonly activeStepSub$ = new BehaviorSubject<Step>(this.steps[0]);
+  private readonly activeStepSub$ = new BehaviorSubject<ProcessStep>(this.processSteps[0]);
   private readonly overviewDataSub$ = new BehaviorSubject<IgsMeldung.OverviewResponse | null>(null);
   private readonly attachedFilesSub$ = new BehaviorSubject<File[]>([]);
   private readonly fileUploadsSub$ = new BehaviorSubject<IgsMeldung.FileUploadInfo[]>([]);
@@ -170,45 +152,37 @@ export class IgsMeldungService {
   private readonly sequenceUploadService = inject(SequenceUploadService);
   private readonly meldungSubmitService = inject(MeldungSubmitService);
   private readonly fhirValidationResponseService = inject(FhirValidationResponseService);
-  private readonly configService = inject(ConfigService);
   private readonly stepNavigationService = inject(StepNavigation);
 
   proceed() {
-    const currentStepIndex = this.steps.indexOf(this.activeStepSub$.value);
-    if (currentStepIndex < this.steps.length - 1 && this.canProceed()) {
-      if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-        // Mark current step as valid
-        this.processSteps[currentStepIndex].control.setValue(true);
-        this.processSteps[currentStepIndex].control.markAsTouched();
-        this.processSteps[currentStepIndex].control.updateValueAndValidity();
-      }
+    const currentStepIndex = this.processSteps.indexOf(this.activeStepSub$.value);
+    if (currentStepIndex < this.processSteps.length - 1 && this.canProceed()) {
+      // Mark current step as valid
+      this.processSteps[currentStepIndex].control.setValue(true);
+      this.processSteps[currentStepIndex].control.markAsTouched();
+      this.processSteps[currentStepIndex].control.updateValueAndValidity();
 
       // Activate next step
       const nextStepIndex = currentStepIndex + 1;
-      this.activeStepSub$.next(this.steps[nextStepIndex]);
-      if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-        // Because of the linear mode, enable the next step's control
-        this.processSteps[nextStepIndex].control.enable();
-      }
+      this.activeStepSub$.next(this.processSteps[nextStepIndex]);
+      // Because of the linear mode, enable the next step's control
+      this.processSteps[nextStepIndex].control.enable();
     }
   }
 
   proceedToResultStep() {
     this.initializeNotificationUploadInfoFromLocalStorage();
     this.initializeUploadErrorsFromLocalStorage();
-    this.activeStepSub$.next(this.steps[this.steps.length - 1]);
+    this.activeStepSub$.next(this.processSteps.at(-1)!);
   }
 
   lastResultsAvailable(): boolean {
-    let notificationUploadInfoJson = localStorage.getItem(IgsLocalStorageKeys.NOTIFICATION_UPLOADS);
-    if (notificationUploadInfoJson && notificationUploadInfoJson.length > 0) {
-      return true;
-    }
-    return false;
+    const notificationUploadInfoJson = localStorage.getItem(IgsLocalStorageKeys.NOTIFICATION_UPLOADS);
+    return !!notificationUploadInfoJson && notificationUploadInfoJson.length > 0;
   }
 
   canProceed(): boolean {
-    const currentStepIndex = this.steps.indexOf(this.activeStepSub$.value);
+    const currentStepIndex = this.processSteps.indexOf(this.activeStepSub$.value);
     switch (currentStepIndex) {
       case 0:
         return this.csvFileParsed();
@@ -231,7 +205,7 @@ export class IgsMeldungService {
       }
     });
     localStorage.setItem(IgsLocalStorageKeys.NOTIFICATION_UPLOADS, JSON.stringify(this.notificationUploadsSub$.value));
-    this.activeStepSub$.next(this.steps[3]);
+    this.activeStepSub$.next(this.processSteps[3]);
     this.uploadCanceled$.next(true);
     this.uploadCanceledSubject.next(true);
   }
@@ -244,7 +218,7 @@ export class IgsMeldungService {
   backToWelcome() {
     this.stepNavigationService.reset();
     this.csvFileSub$.next(null);
-    this.activeStepSub$.next(this.steps[0]);
+    this.activeStepSub$.next(this.processSteps[0]);
     this.overviewDataSub$.next(null);
     this.attachedFilesSub$.next([]);
     this.fileUploadsSub$.next([]);
@@ -619,7 +593,7 @@ export class IgsMeldungService {
     }
     this.logger.debug('Submitting notification', notification);
     try {
-      const demisSequenceId = await lastValueFrom(
+      return await lastValueFrom(
         this.meldungSubmitService
           .submitMeldung({
             metadata: {
@@ -630,7 +604,6 @@ export class IgsMeldungService {
           })
           .pipe(map(response => response.igsId))
       );
-      return demisSequenceId;
     } catch (err: any) {
       this.logger.error('Error submitting notification', notification, err);
       this.handleSubmitNotificationError(err, notification);

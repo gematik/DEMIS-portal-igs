@@ -34,16 +34,9 @@
     </button>
   </ng-template>
 
-  @if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
-    <gem-demis-actions-bar>
-      <ng-container *ngTemplateOutlet="uploadBtn" actions-right></ng-container>
-    </gem-demis-actions-bar>
-  }
-  @else {
-    <ng-template #actionsRight>
-      <ng-container *ngTemplateOutlet="uploadBtn"></ng-container>
-    </ng-template>
-  }
+  <ng-template #actionsRight>
+    <ng-container *ngTemplateOutlet="uploadBtn"></ng-container>
+  </ng-template>
 }
 @else {
   <gem-demis-section-header id="demis-igs-upload-metadata-section-header" titleText="Metadaten hochladen" [level]="2">
@@ -60,26 +53,18 @@
         </button>
       }
     </ng-template>
-    
+
     <ng-template #dummyUploadBtn>
       <button id="demis-igs-dummy-upload-btn" type="button" mat-flat-button color="primary" [disabled]="true">
         Datei verwenden
       </button>
     </ng-template>
-    
 
-  @if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
-    <gem-demis-actions-bar>
-      <ng-container *ngTemplateOutlet="showLastResultsBtn" actions-left></ng-container>
-      <ng-container *ngTemplateOutlet="dummyUploadBtn" actions-right></ng-container>
-    </gem-demis-actions-bar>
-  }
-  @else {
-    <ng-template #actionsLeft>
-      <ng-container *ngTemplateOutlet="showLastResultsBtn"></ng-container>
-    </ng-template>
-    <ng-template #actionsRight>
-      <ng-container *ngTemplateOutlet="dummyUploadBtn"></ng-container>
-    </ng-template>
-  }
+
+  <ng-template #actionsLeft>
+    <ng-container *ngTemplateOutlet="showLastResultsBtn"></ng-container>
+  </ng-template>
+  <ng-template #actionsRight>
+    <ng-container *ngTemplateOutlet="dummyUploadBtn"></ng-container>
+  </ng-template>
 }

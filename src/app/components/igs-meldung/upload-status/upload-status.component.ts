@@ -40,7 +40,6 @@ import {
 } from '@gematik/demis-portal-core-library';
 import { IgsMeldungService } from 'src/app/components/igs-meldung/igs-meldung.service';
 import { IgsMeldung } from 'src/app/components/igs-meldung/igs-meldung.types';
-import { ConfigService } from '../../../config.service';
 import { Subject, takeUntil } from 'rxjs';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -77,24 +76,17 @@ import { MatProgressSpinner } from '@angular/material/progress-spinner';
 export class UploadStatusComponent extends StepContentComponent<void> implements OnInit, OnDestroy {
   igsMeldungService = inject(IgsMeldungService);
   private readonly messageDialogService = inject(MessageDialogService);
-  private readonly configService = inject(ConfigService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly stepNavigationService = inject(StepNavigation);
   private readonly destroy$ = new Subject<void>();
-
-  get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
-    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
-  }
 
   private getRowErrors() {
     return this.igsMeldungService.rowErrorsSub$.value;
   }
 
   ngOnInit(): void {
-    if (this.FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
-      this.igsMeldungService.processSteps[0].control.disable();
-      this.igsMeldungService.processSteps[1].control.disable();
-    }
+    this.igsMeldungService.processSteps[0].control.disable();
+    this.igsMeldungService.processSteps[1].control.disable();
 
     // Subscribe to rowErrorsSub$ to trigger change detection when errors change
     // This prevents NG0100 errors when hasErrorData() is called in templates
@@ -133,22 +125,18 @@ export class UploadStatusComponent extends StepContentComponent<void> implements
 
   cancel() {
     this.igsMeldungService.cancel();
-    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      // mark the upload-status step as not completed
-      this.igsMeldungService.processSteps[2].control.setValue(null);
-      this.igsMeldungService.processSteps[2].control.markAsTouched();
-      this.igsMeldungService.processSteps[2].control.updateValueAndValidity();
-      // enable the result step
-      this.igsMeldungService.processSteps[3].control.enable();
-      // navigate to the result step
-      this.stepNavigationService.next();
-    }
+    // mark the upload-status step as not completed
+    this.igsMeldungService.processSteps[2].control.setValue(null);
+    this.igsMeldungService.processSteps[2].control.markAsTouched();
+    this.igsMeldungService.processSteps[2].control.updateValueAndValidity();
+    // enable the result step
+    this.igsMeldungService.processSteps[3].control.enable();
+    // navigate to the result step
+    this.stepNavigationService.next();
   }
 
   proceed() {
     this.igsMeldungService.proceed();
-    if (this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV')) {
-      this.stepNavigationService.next();
-    }
+    this.stepNavigationService.next();
   }
 }
