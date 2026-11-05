@@ -33,9 +33,6 @@ const mockEnvironmentConfig = {
     igsServiceUrl: 'http://localhost:8080/service',
     maxRetry: 40,
   },
-  featureFlags: {
-    FEATURE_FLAG_PORTAL_IGS_SIDENAV: false,
-  },
 };
 
 // Store the original fetch to restore it after each test

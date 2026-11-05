@@ -17,7 +17,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { FileSizePipe, MessageDialogService, Step, StepNavigation } from '@gematik/demis-portal-core-library';
+import { FileSizePipe, MessageDialogService, StepNavigation } from '@gematik/demis-portal-core-library';
 import { MockBuilder } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 import { BehaviorSubject, firstValueFrom, of, throwError } from 'rxjs';
@@ -32,7 +32,6 @@ import { igsBatchFastqSequenzdateienSelectOverview, igsBatchFastqTestdata, uploa
 import { IgsLocalStorageKeys, IgsMeldungService, SEARCH_STRINGS, UploadError } from './igs-meldung.service';
 import { IgsMeldung } from './igs-meldung.types';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ConfigService } from 'src/app/config.service';
 
 const exampleOpperationOutcomeString = JSON.stringify(
   {
@@ -100,15 +99,15 @@ describe('IgsMeldungService', () => {
   });
 
   it('should have initial steps', () => {
-    expect(service.steps.length).toBe(4);
-    expect(service.steps[0].number).toBe(1);
-    expect(service.steps[0].title).toBe('Metadaten bereitstellen');
-    expect(service.steps[0].description).toBe('Bereitstellung der Metadaten in tabellarischer Form');
+    expect(service.processSteps.length).toBe(4);
+    expect(service.processSteps[0].key).toBe('csv-upload');
+    expect(service.processSteps[0].label).toBe('Metadaten bereitstellen');
+    expect(service.processSteps[0].description).toBe('Bereitstellung der Metadaten in tabellarischer Form');
   });
 
   it('should have initial values for observables', async () => {
     await expect(firstValueFrom(service.csvFile$)).resolves.toEqual(null);
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[0]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[0]);
     await expect(firstValueFrom(service.overviewData$)).resolves.toEqual(null);
     await expect(firstValueFrom(service.sequenceFileSelectionOverviewData$)).resolves.toEqual([]);
     await expect(firstValueFrom(service.attachedFiles$)).resolves.toEqual([]);
@@ -199,7 +198,7 @@ describe('IgsMeldungService', () => {
 
     // Expect the service state to be reset
     await expect(firstValueFrom(service.csvFile$)).resolves.toEqual(null);
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[0]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[0]);
     await expect(firstValueFrom(service.overviewData$)).resolves.toEqual(null);
     await expect(firstValueFrom(service.attachedFiles$)).resolves.toEqual([]);
     await expect(firstValueFrom(service.fileUploads$)).resolves.toEqual([]);
@@ -235,7 +234,7 @@ describe('IgsMeldungService', () => {
     // Call the reset method
     service.cancel();
 
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[3]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[3]);
     expect(uploadCanceledSpy).toHaveBeenCalledWith(true);
     expect(uploadCanceledSubjectSpy).toHaveBeenCalledWith(true);
     // assert aborted state in service
@@ -273,13 +272,13 @@ describe('IgsMeldungService', () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     expect(service.canProceed()).toBe(true);
     service.proceed();
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[1]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[1]);
   });
 
   it('should not proceed if no CSV file is selected', async () => {
     expect(service.canProceed()).toBe(false);
     service.proceed();
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[0]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[0]);
   });
 
   it('should proceed to the next step if all sequence files are attached', async () => {
@@ -296,7 +295,7 @@ describe('IgsMeldungService', () => {
     service.attachFiles(fileList);
     expect(service.canProceed()).toBe(true);
     service.proceed();
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[2]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[2]);
   });
 
   it('should not proceed if not all sequence files are attached', async () => {
@@ -304,7 +303,7 @@ describe('IgsMeldungService', () => {
     service.useParsedCsvOverviewData(igsBatchFastqTestdata);
     service.attachFiles(fileList);
     service.proceed();
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[1]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[1]);
   });
 
   it('should proceed to the next step if notifications are uploaded', async () => {
@@ -381,7 +380,7 @@ describe('IgsMeldungService', () => {
     );
     expect(service.canProceed()).toBe(true);
     service.proceed();
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[3]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[3]);
   });
 
   it('should not proceed if notifications are not uploaded', async () => {
@@ -437,7 +436,7 @@ describe('IgsMeldungService', () => {
     service.proceed();
     expect(service.canProceed()).toBe(false);
     service.proceed();
-    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.steps[3]);
+    await expect(firstValueFrom(service.activeStep$)).resolves.toEqual(service.processSteps[3]);
   });
 
   it('should write errors associated with create document reference to rowErrorsSub$', async () => {
@@ -911,12 +910,8 @@ describe('IgsMeldungService', () => {
     const rowErrorsSub = service['rowErrorsSub$'] as BehaviorSubject<UploadError[]>;
     expect(rowErrorsSub.value).toEqual(JSON.parse(uploadErrors));
 
-    const activeStepSub = service['activeStepSub$'] as BehaviorSubject<Step>;
-    expect(activeStepSub.value).toEqual({
-      number: 4,
-      title: 'Ergebnis',
-      description: 'Zusammenfassung der Übermittlungen',
-    });
+    const activeStepSub = service['activeStepSub$'] as BehaviorSubject<(typeof service.processSteps)[number]>;
+    expect(activeStepSub.value).toEqual(service.processSteps[3]);
   });
 
   it('should not start to send any notification if upload was canceled', async () => {
@@ -1063,14 +1058,7 @@ describe('IgsMeldungService', () => {
     expect(initializedResultEntries).toEqual(JSON.stringify(expectedResultEntries));
   });
 
-  describe('proceed with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
-    let configService: ConfigService;
-
-    beforeEach(() => {
-      configService = TestBed.inject(ConfigService);
-      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
-    });
-
+  describe('proceed', () => {
     it('should mark current step as valid and enable next step when proceeding', () => {
       const currentStepControl = service.processSteps[0].control;
       const nextStepControl = service.processSteps[1].control;

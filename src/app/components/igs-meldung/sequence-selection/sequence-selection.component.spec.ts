@@ -19,19 +19,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { MatTableDataSource } from '@angular/material/table';
 import { StepNavigation } from '@gematik/demis-portal-core-library';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { MockBuilder, MockRender } from 'ng-mocks';
 import { LoggerModule, NGXLogger } from 'ngx-logger';
 
 import { mockFileList } from 'src/test/shared-behaviour/mock-file-list.function';
 import { igsBatchFastqSequenzdateienSelectOverview } from '../igs-batch-fastq.testdata';
 import { IgsMeldungService } from '../igs-meldung.service';
 import { SequenceSelectionComponent } from './sequence-selection.component';
-import { ConfigService } from '../../../config.service';
 
 describe('SequenceSelectionComponent', () => {
-  let fixture: MockedComponentFixture<SequenceSelectionComponent, SequenceSelectionComponent>;
-  let component: SequenceSelectionComponent;
-  let igsMeldungService: IgsMeldungService;
+  let fixture: any;
+  let component: any;
+  let igsMeldungService: any;
 
   beforeEach(() =>
     MockBuilder([SequenceSelectionComponent, IgsMeldungService]).mock(LoggerModule).mock(NGXLogger).mock(StepNavigation, {
@@ -44,8 +43,9 @@ describe('SequenceSelectionComponent', () => {
   );
 
   beforeEach(() => {
-    fixture = MockRender(SequenceSelectionComponent);
-    component = fixture.point.componentInstance;
+    const rendered = MockRender(SequenceSelectionComponent);
+    fixture = rendered;
+    component = rendered.point.componentInstance;
     igsMeldungService = TestBed.inject(IgsMeldungService);
   });
 
@@ -91,40 +91,31 @@ describe('SequenceSelectionComponent', () => {
     expect(attachFilesSpy).toHaveBeenCalledWith(fileList);
   });
 
-  describe('with FEATURE_FLAG_PORTAL_IGS_SIDENAV enabled', () => {
-    let configService: ConfigService;
+  it('should disable processSteps[0] control in ngOnInit', () => {
+    const processSteps = igsMeldungService.processSteps;
+    const disableSpy = vi.spyOn(processSteps[0].control, 'disable');
 
-    beforeEach(() => {
-      configService = TestBed.inject(ConfigService);
-      vi.spyOn(configService, 'isFeatureEnabled').mockReturnValue(true);
-    });
+    component.ngOnInit();
 
-    it('should disable processSteps[0] control in ngOnInit', () => {
-      const processSteps = igsMeldungService.processSteps;
-      const disableSpy = vi.spyOn(processSteps[0].control, 'disable');
+    expect(disableSpy).toHaveBeenCalled();
+  });
 
-      component.ngOnInit();
+  it('should call stepNavigationService.next() in proceed method', () => {
+    const stepNavigationService = { next: vi.fn() };
+    (component as any).stepNavigationService = stepNavigationService;
+    const proceedSpy = vi.spyOn(igsMeldungService, 'proceed');
 
-      expect(disableSpy).toHaveBeenCalled();
-    });
+    component.proceed();
 
-    it('should call stepNavigationService.next() in proceed method', () => {
-      const stepNavigationService = { next: vi.fn() };
-      (component as any).stepNavigationService = stepNavigationService;
-      const proceedSpy = vi.spyOn(igsMeldungService, 'proceed');
+    expect(proceedSpy).toHaveBeenCalled();
+    expect(stepNavigationService.next).toHaveBeenCalled();
+  });
 
-      component.proceed();
+  it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
+    const backToWelcomeSpy = vi.spyOn(igsMeldungService, 'backToWelcome');
 
-      expect(proceedSpy).toHaveBeenCalled();
-      expect(stepNavigationService.next).toHaveBeenCalled();
-    });
+    component.backToWelcome();
 
-    it('should call igsMeldungService.backToWelcome() in backToWelcome', () => {
-      const backToWelcomeSpy = vi.spyOn(igsMeldungService, 'backToWelcome');
-
-      component.backToWelcome();
-
-      expect(backToWelcomeSpy).toHaveBeenCalled();
-    });
+    expect(backToWelcomeSpy).toHaveBeenCalled();
   });
 });

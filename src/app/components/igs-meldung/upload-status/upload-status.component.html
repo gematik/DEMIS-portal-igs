@@ -222,19 +222,11 @@
   </button>
 </ng-template>
 
-@if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
-  <gem-demis-actions-bar>
-    <ng-container *ngTemplateOutlet="cancelBtn" actions-left></ng-container>
-    <ng-container *ngTemplateOutlet="showResultsBtn" actions-right></ng-container>
-  </gem-demis-actions-bar>
-}
-@else {
-  @if (!igsMeldungService.canProceed()) {
-    <ng-template #actionsLeft>
-      <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
-    </ng-template>
-  }
-  <ng-template #actionsRight>
-    <ng-container *ngTemplateOutlet="showResultsBtn"></ng-container>
+@if (!igsMeldungService.canProceed()) {
+  <ng-template #actionsLeft>
+    <ng-container *ngTemplateOutlet="cancelBtn"></ng-container>
   </ng-template>
 }
+<ng-template #actionsRight>
+  <ng-container *ngTemplateOutlet="showResultsBtn"></ng-container>
+</ng-template>

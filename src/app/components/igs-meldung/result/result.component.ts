@@ -33,14 +33,12 @@ import {
 import {
   MessageDialogService,
   StepContentComponent,
-  StepNavigation,
   SectionHeaderComponent,
   SecondaryButtonDirective,
   ActionsBarComponent,
 } from '@gematik/demis-portal-core-library';
 import { NGXLogger } from 'ngx-logger';
 import { ExportToFileService } from 'src/api/services/export-to-file.service';
-import { ConfigService } from '../../../config.service';
 import { IgsLocalStorageKeys, IgsMeldungService, UploadError } from '../igs-meldung.service';
 import { IgsMeldung } from '../igs-meldung.types';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -78,12 +76,6 @@ export class ResultComponent extends StepContentComponent<void> implements OnIni
   private readonly logger = inject(NGXLogger);
   private readonly messageDialogService = inject(MessageDialogService);
   private readonly exportToFileService = inject(ExportToFileService);
-  private readonly configService = inject(ConfigService);
-  private readonly stepNavigationService = inject(StepNavigation);
-
-  get FEATURE_FLAG_PORTAL_IGS_SIDENAV(): boolean {
-    return this.configService.isFeatureEnabled('FEATURE_FLAG_PORTAL_IGS_SIDENAV');
-  }
 
   private readonly fallbackFilenameSuffix = new Date().toISOString().replace(/:/g, '-');
 
@@ -99,9 +91,7 @@ export class ResultComponent extends StepContentComponent<void> implements OnIni
   }
 
   ngOnInit(): void {
-    if (this.FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
-      this.igsMeldungService.processSteps[2].control.disable();
-    }
+    this.igsMeldungService.processSteps[2].control.disable();
   }
 
   toDataSource(results: IgsMeldung.NotificationUploadInfo[]): MatTableDataSource<IgsMeldung.NotificationUploadInfo, MatPaginator> {

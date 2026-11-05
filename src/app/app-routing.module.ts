@@ -18,12 +18,12 @@
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AppWrapperComponent } from './app-wrapper.component';
+import { IgsNotificationComponent } from './igs-notification/igs-notification.component';
 
 const routes: Routes = [
   {
     path: '**',
-    component: AppWrapperComponent,
+    component: IgsNotificationComponent,
   },
 ];
 

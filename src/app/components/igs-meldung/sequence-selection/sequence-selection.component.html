@@ -109,18 +109,10 @@
   </button>
 </ng-template>
 
-@if (!FEATURE_FLAG_PORTAL_IGS_SIDENAV) {
-  <gem-demis-actions-bar>
-    <ng-container *ngTemplateOutlet="resetBtn" actions-left></ng-container>
-    <ng-container *ngTemplateOutlet="startSequenceUploadBtn" actions-right></ng-container>
-  </gem-demis-actions-bar>
-}
-@else {
-  <ng-template #actionsLeft>
-    <ng-container *ngTemplateOutlet="resetBtn"></ng-container>
-  </ng-template>
+<ng-template #actionsLeft>
+  <ng-container *ngTemplateOutlet="resetBtn"></ng-container>
+</ng-template>
 
-  <ng-template #actionsRight>
-    <ng-container *ngTemplateOutlet="startSequenceUploadBtn"></ng-container>
-  </ng-template>
-}
+<ng-template #actionsRight>
+  <ng-container *ngTemplateOutlet="startSequenceUploadBtn"></ng-container>
+</ng-template>
