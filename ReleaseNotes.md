@@ -2,6 +2,10 @@
 
 # Release portal-igs
 
+## Release 1.4.8
+- Updated minor/patch versions of dependencies
+- Removed legacy code
+
 ## Release 1.4.7
 - Removed FEATURE_FLAG_PORTAL_IGS_SIDENAV
 - Removed FEATURE_FLAG_FOOTER_LINKS_CORRECTION
