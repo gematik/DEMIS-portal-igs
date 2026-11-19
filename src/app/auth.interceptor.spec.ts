@@ -57,7 +57,6 @@ describe('AuthInterceptor', () => {
 
   afterEach(() => {
     delete (window as any)['token'];
-    delete (window as any)['config'];
   });
 
   const urlTest = (url: string, tokenShouldBeThere: boolean = true) =>
@@ -81,7 +80,6 @@ describe('AuthInterceptor', () => {
   describe('Token is existing', () => {
     beforeEach(() => {
       (window as any)['token'] = token;
-      (window as any)['config'] = { mfIgs: { ...urls } };
       MockRender();
     });
 
